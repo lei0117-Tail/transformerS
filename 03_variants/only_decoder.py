@@ -394,27 +394,42 @@ if __name__ == "__main__":
 
     # GPT-tiny 配置
     gpt = GPTLikeDecoder(
-        vocab_size=1000,
-        d_model=128,
-        num_heads=4,
-        num_layers=2,
-        d_ff=512,
-        max_len=128,
+        vocab_size=1000,   # 词表大小
+        d_model=128,        # 模型维度
+        num_heads=4,        # 注意力头数（d_k = 128/4 = 32）
+        num_layers=2,        # Decoder 层数
+        d_ff=512,           # FFN 中间层维度
+        max_len=128,         # 最大序列长度
         dropout=0.0,
     )
     lm = GPTForLM(gpt)
     total_params = sum(p.numel() for p in lm.parameters())
-    print(f"\nGPT-tiny 参数量: {total_params:,}")
+    print(f"\n配置: vocab={1000}, d_model=128, heads=4, layers=2, d_ff=512")
+    print(f"      d_k = 128 / 4 = 32")
+    print(f"GPT-tiny 参数量: {total_params:,}")
 
     batch_size = 2
     seq_len = 20
 
     input_ids = torch.randint(1, 1000, (batch_size, seq_len))
 
-    # ── 前向传播 ──
+    print(f"\n{'='*50}")
+    print("逐步跟踪 GPT 前向传播:")
+    print(f"{'='*50}")
+    print(f"  input_ids (token ids): {input_ids.shape}          [batch={batch_size}, seq_len={seq_len}]")
+
+    # Embedding
+    emb_out = gpt.token_embedding(input_ids) * math.sqrt(gpt.d_model)
+    # GPT 的 position_embedding 需要位置索引（整数），不是 embedding 输出
+    position_ids = torch.arange(seq_len).unsqueeze(0)  # [1, seq_len]
+    pos_emb = gpt.position_embedding(position_ids)
+    embeddings = emb_out + pos_emb
+    print(f"  Token Embedding 后:     {emb_out.shape}            [batch, seq_len, d_model]")
+    print(f"  + Position Embedding:   {embeddings.shape}         [batch, seq_len, d_model]")
+
+    # 前向传播
     logits = lm(input_ids)
-    print(f"\n[前向] input_ids shape: {input_ids.shape}")
-    print(f"[前向] logits shape: {logits.shape}")  # [2, 20, 1000]
+    print(f"\n  logits (预测下一个词):{logits.shape}              [batch, seq_len, vocab_size=1000]")
 
     # ── 计算训练损失 ──
     loss = lm.compute_loss(input_ids)

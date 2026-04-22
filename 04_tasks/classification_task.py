@@ -1,20 +1,19 @@
 """
 任务1: 文本分类（Only Encoder / BERT 风格）
 =============================================
-使用 Only Encoder 做情感分析（Sentiment Analysis）。
+使用 Only Encoder 做文本分类。
 
 任务说明：
   - 输入：文本序列（token ids）
-  - 输出：类别预测（如：正面/负面/中性）
+  - 输出：类别预测
   - 原理：取 [CLS] token 的表示，接分类头
 
-训练流程：
-  1. 构造合成数据集（正面/负面文本）
-  2. 构建 DataLoader
-  3. 训练 Only Encoder 分类器
-  4. 评估准确率
+数据集选项（通过 run_classification_task(use_real_data=True/False) 切换）：
+  - 合成数据（默认）：随机生成，无需任何依赖，验证模型流程
+  - 真实数据：sklearn 内置 20newsgroups（2类：科技 vs 体育），无需下载
 
-本示例使用合成数据，演示完整的训练循环，无需下载真实数据集。
+真实数据使用方式：
+    python 04_tasks/classification_task.py --real
 """
 
 import math
@@ -78,6 +77,80 @@ class SyntheticSentimentDataset(Dataset):
     def __getitem__(self, idx):
         return (
             torch.tensor(self.data[idx], dtype=torch.long),
+            torch.tensor(self.labels[idx], dtype=torch.long),
+        )
+
+
+# ─────────────────────────────────────────────
+# 真实数据集：20 Newsgroups（sklearn 内置，无需下载）
+# ─────────────────────────────────────────────
+class NewsGroupsDataset(Dataset):
+    """
+    使用 sklearn 内置的 20newsgroups 数据集做二分类：
+      - 类别 0: rec.sport.baseball（体育）
+      - 类别 1: sci.space（科技）
+
+    分词方式：空格分词 + 词频词表（word-level），简单实现，无需外部分词器。
+
+    Args:
+        subset:     'train' 或 'test'
+        max_len:    序列截断长度
+        vocab_size: 词表大小（按词频取前 N 个）
+        vocab:      复用已有词表（val/test 时传入 train 的词表）
+    """
+
+    def __init__(self, subset: str = "train", max_len: int = 128,
+                 vocab_size: int = 8000, vocab: dict = None):
+        from sklearn.datasets import fetch_20newsgroups
+
+        categories = ["rec.sport.baseball", "sci.space"]
+        data = fetch_20newsgroups(
+            subset=subset,
+            categories=categories,
+            remove=("headers", "footers", "quotes"),  # 去掉元信息，防止泄露
+        )
+
+        self.texts = data.data
+        self.labels = data.target.tolist()
+        self.max_len = max_len
+
+        # 建立词表（仅 train 时建，test/val 复用）
+        if vocab is None:
+            word_freq: dict = {}
+            for text in self.texts:
+                for w in text.lower().split():
+                    w = w.strip(".,!?;:\"'()[]")
+                    if w:
+                        word_freq[w] = word_freq.get(w, 0) + 1
+            # 保留最高频的 vocab_size-4 个词，前 4 位留给特殊 token
+            top_words = sorted(word_freq, key=lambda x: -word_freq[x])[:vocab_size - 4]
+            self.vocab = {"<pad>": 0, "<cls>": 1, "<sep>": 2, "<unk>": 3}
+            for w in top_words:
+                self.vocab[w] = len(self.vocab)
+        else:
+            self.vocab = vocab
+
+        self.vocab_size = len(self.vocab)
+
+    def _tokenize(self, text: str):
+        """文本 → token id 列表，带 [CLS] 和截断"""
+        tokens = [1]  # <cls>
+        for w in text.lower().split():
+            w = w.strip(".,!?;:\"'()[]")
+            if w:
+                tokens.append(self.vocab.get(w, 3))  # 3 = <unk>
+        tokens = tokens[: self.max_len]
+        # padding
+        tokens += [0] * (self.max_len - len(tokens))
+        return tokens
+
+    def __len__(self):
+        return len(self.texts)
+
+    def __getitem__(self, idx):
+        ids = self._tokenize(self.texts[idx])
+        return (
+            torch.tensor(ids, dtype=torch.long),
             torch.tensor(self.labels[idx], dtype=torch.long),
         )
 
@@ -259,31 +332,54 @@ def evaluate(model, loader, device):
     return correct / total
 
 
-def run_classification_task():
+def run_classification_task(use_real_data: bool = False):
+    """
+    Args:
+        use_real_data: False → 合成数据（快，3 类，验证流程）
+                       True  → 20newsgroups 真实文本（体育 vs 科技，2 类）
+    """
     print("=" * 60)
     print("任务1: 文本分类（Only Encoder / BERT 风格）")
     print("=" * 60)
 
-    # 超参数
-    VOCAB_SIZE = 500
-    SEQ_LEN = 32
-    D_MODEL = 64
-    NUM_HEADS = 4
-    NUM_LAYERS = 2
-    NUM_CLASSES = 3
-    BATCH_SIZE = 32
-    LR = 3e-4
-    EPOCHS = 10
-
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"\n设备: {device}")
 
-    # 数据集
-    train_dataset = SyntheticSentimentDataset(num_samples=2000, seq_len=SEQ_LEN, vocab_size=VOCAB_SIZE)
-    val_dataset = SyntheticSentimentDataset(num_samples=500, seq_len=SEQ_LEN, vocab_size=VOCAB_SIZE)
+    if use_real_data:
+        # ── 真实数据集：20newsgroups ──────────────────────────────
+        print("数据集: 20newsgroups（体育 vs 科技，sklearn 内置）")
+        SEQ_LEN    = 128
+        D_MODEL    = 128
+        NUM_HEADS  = 4
+        NUM_LAYERS = 3
+        NUM_CLASSES = 2
+        BATCH_SIZE = 32
+        LR         = 3e-4
+        EPOCHS     = 15
+
+        train_dataset = NewsGroupsDataset(subset="train", max_len=SEQ_LEN, vocab_size=8000)
+        val_dataset   = NewsGroupsDataset(subset="test",  max_len=SEQ_LEN, vocab=train_dataset.vocab)
+        VOCAB_SIZE = train_dataset.vocab_size
+        print(f"词表大小: {VOCAB_SIZE}")
+        print(f"训练样本: {len(train_dataset)},  测试样本: {len(val_dataset)}")
+        print(f"类别: 0=rec.sport.baseball, 1=sci.space")
+    else:
+        # ── 合成数据（默认）──────────────────────────────────────
+        print("数据集: 合成情感数据（三分类，快速验证）")
+        VOCAB_SIZE = 500
+        SEQ_LEN    = 32
+        D_MODEL    = 64
+        NUM_HEADS  = 4
+        NUM_LAYERS = 2
+        NUM_CLASSES = 3
+        BATCH_SIZE  = 32
+        LR          = 3e-4
+        EPOCHS      = 10
+        train_dataset = SyntheticSentimentDataset(num_samples=2000, seq_len=SEQ_LEN, vocab_size=VOCAB_SIZE)
+        val_dataset   = SyntheticSentimentDataset(num_samples=500,  seq_len=SEQ_LEN, vocab_size=VOCAB_SIZE)
 
     train_loader = DataLoader(train_dataset, batch_size=BATCH_SIZE, shuffle=True)
-    val_loader = DataLoader(val_dataset, batch_size=BATCH_SIZE)
+    val_loader   = DataLoader(val_dataset,   batch_size=BATCH_SIZE)
 
     # 模型
     model = TextClassifier(
@@ -298,6 +394,24 @@ def run_classification_task():
 
     total_params = sum(p.numel() for p in model.parameters())
     print(f"模型参数量: {total_params:,}")
+
+    # 打印数据流形状
+    sample_input, sample_label = next(iter(train_loader))
+    print(f"\n{'='*50}")
+    print("数据流形状追踪:")
+    print(f"{'='*50}")
+    print(f"  输入 input_ids:  {sample_input.shape}   [batch={BATCH_SIZE}, seq_len={SEQ_LEN}]")
+    print(f"  标签 labels:      {sample_label.shape}   [batch={BATCH_SIZE}] (类别 0~{NUM_CLASSES-1})")
+
+    # 单个样本前向看形状变化
+    model.eval()
+    single_input = sample_input[:1].to(device)
+    with torch.no_grad():
+        emb = model.embedding(single_input) if hasattr(model, 'embedding') else None
+        if emb is not None:
+            print(f"  Embedding 后:     {emb.shape}       [1, seq_len, d_model={D_MODEL}]")
+        logits_sample = model(single_input)
+    print(f"  logits (输出):    {logits_sample.shape}   [1, num_classes={NUM_CLASSES}] ← 分类概率（未 softmax）")
 
     optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=0.01)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS)
@@ -323,5 +437,7 @@ def run_classification_task():
 
 
 if __name__ == "__main__":
-    run_classification_task()
+    import sys
+    use_real = "--real" in sys.argv
+    run_classification_task(use_real_data=use_real)
 

@@ -16,6 +16,23 @@ Step 4: 位置前馈网络 (Position-wise Feed-Forward Network, FFN)
   - 原始论文: ReLU
   - GPT-2/3:  GELU（更平滑，梯度更稳定）
   - LLaMA:    SwiGLU（引入门控机制，效果更好）
+
+ReLU 的魔法：负数变 0，正数保留
+
+plain text
+Apply
+输入:  [2, -3, 1, -1, 4]
+ReLU:  [2,  0, 1,  0, 4]    ← 部分信息被"关掉"了
+
+W₁: 随机小数 → FFN 输出基本是噪声，模型"不会做事"
+b₁: 全 0
+W₂: 随机小数
+b₂: 全 0
+
+W₁: 学会了"哪些特征维度需要扩张"
+b₁: 学会了"每个中间神经元的基础偏移"
+W₂: 学会了"如何把扩张后的特征压缩回有用表示"
+b₂: 学会了"输出的基础偏移"
 """
 
 import torch
@@ -130,26 +147,26 @@ if __name__ == "__main__":
     print("Step 4: Position-wise Feed-Forward Network")
     print("=" * 60)
 
-    batch_size = 2
-    seq_len = 10
-    d_model = 128
-    d_ff = 512  # 4 × d_model
+    batch_size = 2     # 批次大小
+    seq_len = 10       # 序列长度
+    d_model = 128      # 模型维度（输入/输出维度）
+    d_ff = 512         # FFN 中间层维度，通常是 d_model 的 4 倍（原论文: 512→2048）
 
-    x = torch.randn(batch_size, seq_len, d_model)
-    print(f"\n输入 shape: {x.shape}")
+    x = torch.randn(batch_size, seq_len, d_model)  # 输入：模拟 Attention 层的输出
+    print(f"\n输入 shape: {x.shape}")  # [2, 10, 128]
 
     # ── 标准 FFN (ReLU) ──
     ffn_relu = FeedForward(d_model=d_model, d_ff=d_ff, activation="relu")
-    out_relu = ffn_relu(x)
-    print(f"\n[ReLU FFN] 输出 shape: {out_relu.shape}")  # [2, 10, 128]
+    out_relu = ffn_relu(x)  # 线性变换: 128→512 (ReLU激活) → 降回 128
+    print(f"\n[ReLU FFN] 输出 shape: {out_relu.shape}")  # [2, 10, 128] → 输入输出形状不变
 
     # ── 标准 FFN (GELU) ──
     ffn_gelu = FeedForward(d_model=d_model, d_ff=d_ff, activation="gelu")
-    out_gelu = ffn_gelu(x)
+    out_gelu = ffn_gelu(x)  # GELU 比 ReLU 更平滑，GPT-2/3 使用
     print(f"[GELU FFN] 输出 shape: {out_gelu.shape}")    # [2, 10, 128]
 
     # ── SwiGLU FFN ──
-    ffn_swiglu = SwiGLUFeedForward(d_model=d_model)
+    ffn_swiglu = SwiGLUFeedForward(d_model=d_model)  # LLaMA/PaLM 使用，带门控机制
     out_swiglu = ffn_swiglu(x)
     print(f"[SwiGLU FFN] 输出 shape: {out_swiglu.shape}")  # [2, 10, 128]
 
@@ -160,11 +177,11 @@ if __name__ == "__main__":
     print(f"  SwiGLU FFN:  {sum(p.numel() for p in ffn_swiglu.parameters()):,}")
     # 3 × (d_model × d_ff')，d_ff' ≈ 2/3 × 512 ≈ 341
 
-    # ── 验证"position-wise"：对每个位置独立变换 ──
+    # ── 验证"position-wise"：FFN 对每个位置独立变换，互不影响 ──
     ffn_test = FeedForward(d_model=d_model, dropout=0.0)
-    # 只改变位置 0 的输入
+    # 只改变位置 0 的输入，验证其他位置的输出不受影响
     x_modified = x.clone()
-    x_modified[:, 0, :] += 1.0
+    x_modified[:, 0, :] += 1.0  # 只修改第 0 个位置的值
     out_orig = ffn_test(x)
     out_mod = ffn_test(x_modified)
     # 位置 1 的输出不受影响

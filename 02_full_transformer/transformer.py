@@ -314,17 +314,32 @@ if __name__ == "__main__":
 
     # 小模型配置（快速验证）
     model = Transformer(
-        src_vocab_size=1000,
-        tgt_vocab_size=1000,
-        d_model=128,
-        num_heads=4,
-        num_layers=2,
-        d_ff=512,
+        src_vocab_size=1000,   # 源语言词表大小
+        tgt_vocab_size=1000,   # 目标语言词表大小
+        d_model=128,           # 模型维度
+        num_heads=4,           # 注意力头数（d_k = 128/4 = 32）
+        num_layers=2,          # Encoder/Decoder 各 2 层
+        d_ff=512,              # FFN 中间层维度
         dropout=0.0,
     )
 
     total_params = sum(p.numel() for p in model.parameters())
-    print(f"\n参数总量: {total_params:,}")
+    print(f"\n配置: src_vocab={1000}, tgt_vocab={1000}, d_model=128, heads=4, layers=2")
+    print(f"      d_k = 128 / 4 = 32")
+    print(f"参数总量: {total_params:,}")
+
+    # 打印关键组件权重形状
+    print(f"\n{'='*50}")
+    print("各组件权重形状:")
+    print(f"{'='*50}")
+    enc_layer0 = model.encoder.layers[0]
+    dec_layer0 = model.decoder.layers[0]
+    print(f"  Enc Token Embedding:     {model.encoder.token_embedding.weight.shape}  [1000, 128]")
+    print(f"  Dec Token Embedding:     {model.decoder.token_embedding.weight.shape}  [1000, 128]")
+    print(f"  Output Projection:       {model.output_projection.weight.shape}      [1000, 128] ← 投影到词表")
+    print(f"  Enc Layer0 SelfAttn W_Q: {enc_layer0.self_attn.W_Q.weight.shape}       [128, 128]")
+    print(f"  Dec Layer0 SelfAttn W_Q: {dec_layer0.self_attn.W_Q.weight.shape}       [128, 128]")
+    print(f"  Dec Layer0 Cross W_Q:    {dec_layer0.cross_attn.W_Q.weight.shape}       [128, 128]")
 
     # 训练模式前向传播（Teacher Forcing）
     batch_size = 2
@@ -335,9 +350,23 @@ if __name__ == "__main__":
     tgt = torch.randint(1, 1000, (batch_size, tgt_len))
     src[0, -3:] = 0  # padding
 
-    print(f"\n[训练] src shape: {src.shape}, tgt shape: {tgt.shape}")
-    logits = model(src, tgt)
-    print(f"[训练] logits shape: {logits.shape}")  # [2, 8, 1000]
+    print(f"\n{'='*50}")
+    print("逐步跟踪 Transformer 前向传播:")
+    print(f"{'='*50}")
+    print(f"  src (源序列):           {src.shape}             [batch={batch_size}, src_len={src_len}]")
+    print(f"  tgt (目标序列，右移):    {tgt.shape}             [batch, tgt_len={tgt_len}]")
+
+    # Step 1: Encoder
+    enc_output = model.encoder(src)
+    print(f"  Encoder 输出:          {enc_output.shape}         [batch, src_len, d_model=128]")
+
+    # Step 2: Decoder
+    dec_output = model.decoder(tgt, enc_output)
+    print(f"  Decoder 输出:          {dec_output.shape}         [batch, tgt_len, d_model=128]")
+
+    # Step 3: 输出投影
+    logits = model.output_projection(dec_output)
+    print(f"  输出投影 (logits):      {logits.shape}            [batch, tgt_len, vocab_size=1000]")
 
     # 计算损失示例
     # tgt_shifted 是 tgt 右移一位后的目标（去掉 <bos>，加上 <eos>）

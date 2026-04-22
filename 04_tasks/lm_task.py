@@ -271,14 +271,28 @@ def train_epoch(model, loader, optimizer, device):
     return avg_loss, perplexity
 
 
-def run_lm_task():
-    print("=" * 60)
-    print("任务2: 字符级语言模型（Only Decoder / GPT 风格）")
-    print("=" * 60)
+def _load_shakespeare(use_full: bool = False) -> str:
+    """
+    加载莎士比亚文本。
 
-    # 合成训练文本（重复的字母序列 + 自定义片段）
-    # 真实使用时换成 Shakespeare、代码、新闻等文本
-    sample_text = """
+    use_full=False: 使用内嵌的哈姆雷特片段（重复 20 次，~12k 字符）
+    use_full=True:  从 Karpathy 的 tinyshakespeare 下载完整文本（~1MB，100 万字符）
+                    下载失败则自动回退到内嵌片段
+    """
+    if use_full:
+        url = "https://raw.githubusercontent.com/karpathy/char-rnn/master/data/tinyshakespeare/input.txt"
+        try:
+            import urllib.request
+            print(f"  正在下载莎士比亚全集（约 1MB）...")
+            with urllib.request.urlopen(url, timeout=10) as resp:
+                text = resp.read().decode("utf-8")
+            print(f"  ✅ 下载成功，文本长度: {len(text):,} 字符")
+            return text
+        except Exception as e:
+            print(f"  ⚠️  下载失败（{e}），回退到内嵌片段")
+
+    # 内嵌片段（回退方案）
+    return """
 To be, or not to be, that is the question:
 Whether 'tis nobler in the mind to suffer
 The slings and arrows of outrageous fortune,
@@ -293,7 +307,20 @@ For in that sleep of death what dreams may come,
 When we have shuffled off this mortal coil,
 Must give us pause. There's the respect
 That makes calamity of so long life.
-""" * 20  # 重复 20 次增加训练数据量
+""" * 20
+
+
+def run_lm_task(use_full_data: bool = False):
+    """
+    Args:
+        use_full_data: False → 内嵌哈姆雷特片段（快速验证）
+                       True  → 下载莎士比亚全集 tinyshakespeare（~1MB，效果更好）
+    """
+    print("=" * 60)
+    print("任务2: 字符级语言模型（Only Decoder / GPT 风格）")
+    print("=" * 60)
+
+    sample_text = _load_shakespeare(use_full=use_full_data)
 
     SEQ_LEN = 64
     D_MODEL = 128
@@ -329,6 +356,21 @@ That makes calamity of so long life.
     total_params = sum(p.numel() for p in model.parameters())
     print(f"模型参数量: {total_params:,}")
 
+    # 打印数据流形状
+    sample_batch = next(iter(loader))
+    sample_ids = sample_batch if isinstance(sample_batch, torch.Tensor) else sample_batch[0]
+    print(f"\n{'='*50}")
+    print("数据流形状追踪:")
+    print(f"{'='*50}")
+    print(f"  输入 input_ids:  {sample_ids.shape}   [batch, seq_len={SEQ_LEN}]")
+
+    # 单个样本前向看形状
+    model.eval()
+    single_input = sample_ids[:1].to(device)
+    with torch.no_grad():
+        logits_sample = model(single_input)
+    print(f"  logits (输出):   {logits_sample.shape}   [batch, seq_len, vocab_size] ← 每个位置预测下一个词")
+
     optimizer = torch.optim.AdamW(model.parameters(), lr=LR, betas=(0.9, 0.95), weight_decay=0.1)
     scheduler = torch.optim.lr_scheduler.CosineAnnealingLR(optimizer, T_max=EPOCHS, eta_min=LR * 0.1)
 
@@ -357,5 +399,7 @@ That makes calamity of so long life.
 
 
 if __name__ == "__main__":
-    run_lm_task()
+    import sys
+    use_full = "--full" in sys.argv
+    run_lm_task(use_full_data=use_full)
 

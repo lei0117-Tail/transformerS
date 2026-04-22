@@ -114,37 +114,54 @@ if __name__ == "__main__":
     print("Masks 工具验证")
     print("=" * 50)
 
-    batch_size = 2
-    src_len = 6
-    tgt_len = 5
+    batch_size = 2   # 批次大小：同时处理多少个样本
+    src_len = 6      # 源序列长度（Encoder 输入的 token 数）
+    tgt_len = 5      # 目标序列长度（Decoder 输入的 token 数）
 
-    # 模拟有 padding 的 token ids
-    src = torch.tensor([[5, 3, 7, 2, 0, 0],
-                        [1, 4, 6, 9, 3, 0]])  # [2, 6]
-    tgt = torch.tensor([[8, 2, 4, 0, 0],
-                        [3, 7, 1, 5, 0]])     # [2, 5]
+    # 模拟有 padding 的 token ids（id=0 表示 <pad>）
+    src = torch.tensor([[5, 3, 7, 2, 0, 0],     # 样本0：4个有效 + 2个pad
+                        [1, 4, 6, 9, 3, 0]])    # 样本1：5个有效 + 1个pad
+    #                    ↑ shape: [batch_size=2, src_len=6]
+    tgt = torch.tensor([[8, 2, 4, 0, 0],         # 样本0：3个有效 + 2个pad
+                        [3, 7, 1, 5, 0]])        # 样本1：4个有效 + 1个pad
+    #                    ↑ shape: [batch_size=2, tgt_len=5]
+
+    print(f"\n输入 src (token ids) shape: {src.shape}   [batch={batch_size}, src_len={src_len}]")
+    print(f"输入 tgt (token ids) shape: {tgt.shape}   [batch={batch_size}, tgt_len={tgt_len}]")
 
     # Padding mask
     pad_mask = make_padding_mask(src)
-    print(f"\nPadding mask shape: {pad_mask.shape}")
-    print("src[0] padding mask:", pad_mask[0, 0, 0].int().tolist())  # [1,1,1,1,0,0]
+    # 原理: (src != 0) → [2,6] → unsqueeze → [2,1,1,6]，True=有效，False=padding
+    print(f"\n--- Padding Mask ---")
+    print(f"  src != pad_idx 后: {(src != 0).shape}       [B, S]")
+    print(f"  unsqueeze(1) 后:    {(src != 0).unsqueeze(1).shape}  [B, 1, S]")
+    print(f"  unsqueeze(2) 后:    {pad_mask.shape}          [B, 1, 1, S] ← 最终形状")
+    print(f"  src[0] mask: {pad_mask[0, 0, 0].int().tolist()}")  # [1,1,1,1,0,0] → 后2位是pad
 
     # Causal mask
     causal_mask = make_causal_mask(tgt_len)
-    print(f"\nCausal mask shape: {causal_mask.shape}")
-    print("Causal mask:")
+    # 原理: tril(ones(5,5)) → 下三角矩阵 → [1,1,5,5]
+    print(f"\n--- Causal Mask ---")
+    print(f"  tril(ones({tgt_len},{tgt_len})) shape: {torch.tril(torch.ones(tgt_len, tgt_len)).shape}  [{tgt_len},{tgt_len}]")
+    print(f"  unsqueeze×2 后:                     {causal_mask.shape}              [1, 1, S, S]")
+    print(f"  Causal mask 矩阵（下三角=可关注）:")
     print(causal_mask[0, 0].int())
 
-    # Decoder 自注意力 mask
+    # Decoder 自注意力 mask = causal & padding
     dec_self_mask = make_decoder_self_attn_mask(tgt)
-    print(f"\nDecoder self-attn mask shape: {dec_self_mask.shape}")
-    print("样本0（有 padding）:")
+    # 原理: causal[1,1,5,5] & pad_mask[2,1,1,5] → 广播为 [2,1,5,5]
+    print(f"\n--- Decoder Self-Attention Mask（组合 Mask）---")
+    print(f"  causal_mask shape:      {make_causal_mask(tgt_len).shape}              [1, 1, S, S]")
+    print(f"  padding_mask shape:     {make_padding_mask(tgt).shape}               [B, 1, 1, S]")
+    print(f"  组合后 (&):             {dec_self_mask.shape}                          [B, 1, S, S]")
+    print(f"  样本0（有 padding，上三角也被屏蔽）:")
     print(dec_self_mask[0, 0].int())
 
-    # 交叉注意力 mask
+    # 交叉注意力 mask（只屏蔽 Encoder 端的 padding）
     cross_mask = make_cross_attn_mask(src)
-    print(f"\nCross-attn mask shape: {cross_mask.shape}")
-    print("src[1] cross mask:", cross_mask[1, 0, 0].int().tolist())  # [1,1,1,1,1,0]
+    print(f"\n--- Cross-Attention Mask ---")
+    print(f"  cross_mask shape: {cross_mask.shape}            [B, 1, 1, src_len]")
+    print(f"  src[1] cross mask: {cross_mask[1, 0, 0].int().tolist()}")  # [1,1,1,1,1,0] → 最后1位是pad
 
     print("\n✅ Masks 验证通过！")
 

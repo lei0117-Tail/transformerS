@@ -3,6 +3,13 @@
 > 一份带完整源码的 Transformer 学习课程，从最基础的矩阵乘法出发，逐步搭建出 BERT、GPT、T5 三种主流架构，并通过真实训练任务加以验证。
 
 ---
+## 架构
+
+![](https://transformers.run/assets/img/transformers/transformers_architecture.png)
+
+纯编码器模型（Encoder-Only）：只包含编码器部分，采用双向语言建模，从两个方向理解上下文。适合需要深度理解文本的任务，例如文本分类、命名实体识别等，典型代表如 BERT。
+纯解码器模型（Decoder-Only）：只包含解码器部分，从左到右处理文本。尤其擅长文本生成任务，可以根据提示完成句子、撰写文章，甚至生成代码，典型代表如 GPT、Llama；
+编码器-解码器模型（Encoder-Decoder）：结合了编码器和解码器，使用编码器理解输入，解码器生成输出。擅长序列到序列任务，例如翻译、摘要、问答等，典型代表如 T5、BART。
 
 ## 目录结构
 

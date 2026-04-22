@@ -194,34 +194,93 @@ if __name__ == "__main__":
     print("Step 3: Multi-Head Attention")
     print("=" * 60)
 
-    batch_size = 2
-    seq_len = 10
-    d_model = 128
-    num_heads = 8
+    batch_size = 2     # 批次大小：同时处理多少个样本
+    seq_len = 10       # 序列长度：每个样本包含多少个 token
+    d_model = 128      # 模型维度：每个 token 的向量长度（原论文用 512）
+    num_heads = 8      # 注意力头数：把 d_model 分成 8 个子空间分别做注意力
 
     # d_k = 128 / 8 = 16
     print(f"\n配置: d_model={d_model}, num_heads={num_heads}, d_k={d_model // num_heads}")
 
     mha = MultiHeadAttention(d_model=d_model, num_heads=num_heads)
 
-    x = torch.randn(batch_size, seq_len, d_model)
-    print(f"\n输入 shape: {x.shape}")
+    x = torch.randn(batch_size, seq_len, d_model)  # 输入：模拟 Embedding 层的输出
+    print(f"\n输入 x shape: {x.shape}")  # [2, 10, 128] → batch=2, seq_len=10, d_model=128
+
+    # ── 打印权重矩阵形状 ──
+    print(f"\n{'='*50}")
+    print("各权重矩阵的形状（理解 d_k 从哪来）:")
+    print(f"{'='*50}")
+    print(f"  W_Q 权重 shape: {mha.W_Q.weight.shape}   ← nn.Linear(128, 128) 的 [out, in]")
+    print(f"  W_K 权重 shape: {mha.W_K.weight.shape}   ← 同样是 [128, 128]")
+    print(f"  W_V 权重 shape: {mha.W_V.weight.shape}   ← 同样是 [128, 128]")
+    print(f"  W_O 权重 shape: {mha.W_O.weight.shape}   ← 同样是 [128, 128]")
+    print(f"\n  注意：W_Q/W_K/W_V 都是 [{d_model}, {d_model}] 方阵！")
+    print(f"        行={d_model}（和输入向量匹配），列={d_model}（输出还是 d_model，不是 d_k）")
+
+    # ── 手动拆解每一步的形状变化 ──
+    print(f"\n{'='*50}")
+    print("逐步跟踪形状变化:")
+    print(f"{'='*50}")
+
+    # Step 1: 线性投影
+    Q_raw = mha.W_Q(x)  # 模拟 forward 中的第一步
+    print(f"\n  Step1 - 线性投影 W_Q(x):")
+    print(f"    输入 x:        {x.shape}       [batch, seq, d_model]")
+    print(f"    W_Q.weight:   {mha.W_Q.weight.shape}  [d_model, d_model]")
+    print(f"    输出 Q_raw:    {Q_raw.shape}      [batch, seq, d_model]  ← 维度没变！还是 {d_model}")
+    print(f"    ↑ 此时还没有 d_k，输出依然是 d_model={d_model} 维")
+
+    # Step 2: 切分多头
+    Q_split = Q_raw.view(batch_size, seq_len, num_heads, d_model // num_heads)
+    print(f"\n  Step2 - reshape 切分多头:")
+    print(f"    Q_raw:         {Q_raw.shape}              [batch, seq, d_model]")
+    print(f"    view 切分后:    {Q_split.shape}            [batch, seq, num_heads, d_k]")
+    print(f"                   ↑ 这里才出现 d_k = {d_model // num_heads}")
+
+    Q_heads = Q_split.transpose(1, 2)
+    print(f"    transpose 后:   {Q_heads.shape}            [batch, heads, seq, d_k]")
+    print(f"                   ↑ 这就是送进 attention 的最终 Q 形状")
+
+    # Step 3: attention 内部
+    scores = torch.matmul(Q_heads, Q_heads.transpose(-2, -1)) / math.sqrt(d_model // num_heads)
+    print(f"\n  Step3 - Attention 内部 (Q·Kᵀ / √d_k):")
+    print(f"    Q:             {Q_heads.shape}             [batch, heads, seq, d_k]")
+    print(f"    Kᵀ:           {Q_heads.transpose(-2,-1).shape}  [batch, heads, d_k, seq]")
+    print(f"    分数 scores:   {scores.shape}              [batch, heads, seq, seq]")
+    print(f"    ↑ Q({d_model//num_heads}维) · Kᵀ({d_model//num_heads}维) → 标量分数矩阵")
+
+    # Step 4: combine_heads (拼接回来)
+    combined = Q_heads.transpose(1, 2).contiguous().view(batch_size, seq_len, d_model)
+    print(f"\n  Step4 - combine_heads 拼接回去:")
+    print(f"    多头输出:       {Q_heads.shape}             [batch, heads, seq, d_k]")
+    print(f"    transpose:      {Q_heads.transpose(1,2).shape}   [batch, seq, heads, d_k]")
+    print(f"    view 合并:      {combined.shape}             [batch, seq, d_model]  ← 拼回 {d_model} 维")
+
+    # Step 5: W_O 输出投影
+    final = mha.W_O(combined)
+    print(f"\n  Step5 - W_O 输出投影:")
+    print(f"    拼接后:         {combined.shape}             [batch, seq, d_model]")
+    print(f"    W_O.weight:     {mha.W_O.weight.shape}       [d_model, d_model]")
+    print(f"    最终输出:       {final.shape}               [batch, seq, d_model]")
 
     # ── 场景1: Self-Attention（Q=K=V=x）──
-    out = mha(Q=x, K=x, V=x)
-    print(f"\n[Self-Attention] 输出 shape: {out.shape}")           # [2, 10, 128]
-    print(f"[Self-Attention] 注意力权重 shape: {mha.attention_weights.shape}")  # [2, 8, 10, 10]
+    out = mha(Q=x, K=x, V=x)  # 自注意力：Q=K=V=输入 x（每个位置关注所有位置，包括自己）
+    print(f"\n[Self-Attention] 最终输出 shape: {out.shape}")           # [2, 10, 128] → 形状与输入相同
+    print(f"[Self-Attention] 注意力权重 shape: {mha.attention_weights.shape}")  # [2, 8, 10, 10] → 8个头，每个头一个 10×10 的权重矩阵
 
     # ── 场景2: Cross-Attention（Decoder Q，Encoder K/V）──
-    encoder_out = torch.randn(batch_size, 15, d_model)  # Encoder 输出，长度可以不同
-    decoder_q = torch.randn(batch_size, seq_len, d_model)
+    encoder_out = torch.randn(batch_size, 15, d_model)  # Encoder 输出（长度可以和 Decoder 不同）
+    decoder_q = torch.randn(batch_size, seq_len, d_model)   # Decoder 的 Query（来自 Decoder 自身）
     cross_out = mha(Q=decoder_q, K=encoder_out, V=encoder_out)
+    # 交叉注意力：Decoder 查询 Encoder 的信息（用于翻译等 Seq2Seq 任务）
     print(f"\n[Cross-Attention] Q.shape={decoder_q.shape}, K.shape={encoder_out.shape}")
     print(f"[Cross-Attention] 输出 shape: {cross_out.shape}")      # [2, 10, 128]
 
     # ── 场景3: 带 Causal Mask 的自注意力（Decoder）──
-    causal_mask = create_causal_mask(seq_len)
+    causal_mask = create_causal_mask(seq_len)  # 因果 mask：防止看到未来位置（GPT 类模型必须用）
     causal_out = mha(Q=x, K=x, V=x, mask=causal_mask)
+    # 带 causal mask 的自注意力：位置 i 只能看到 j<=i 的位置
     print(f"\n[Causal Self-Attention] 输出 shape: {causal_out.shape}")  # [2, 10, 128]
 
     # 验证参数数量

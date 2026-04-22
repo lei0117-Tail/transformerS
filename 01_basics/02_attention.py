@@ -161,40 +161,47 @@ if __name__ == "__main__":
     print("Step 2: Scaled Dot-Product Attention")
     print("=" * 60)
 
-    batch_size = 2
-    num_heads = 1
-    seq_len = 6
-    d_k = 32
-    d_v = 32
+    batch_size = 2   # 批次大小：同时处理多少个样本， 比如说 我 爱 你， 我 爱 吃 苹果
+    num_heads = 1    # 注意力头数（这里先测试单头，Step3 会扩展为多头） #
+    seq_len = 6      # 序列长度：每个样本包含多少个 token
+    d_k = 32         # Key/Query 的维度：每个头中 Q 和 K 向量的长度
+    d_v = 32         # Value 的维度：每个头中 V 向量的长度
 
-    # 随机生成 Q, K, V
-    Q = torch.randn(batch_size, num_heads, seq_len, d_k)
-    K = torch.randn(batch_size, num_heads, seq_len, d_k)
-    V = torch.randn(batch_size, num_heads, seq_len, d_v)
+    # 随机生成 Q, K, V：模拟经过线性变换后的查询、键、值张量
+    # 实际使用中这些是通过输入 x 分别乘以 W_Q、W_K、W_V 得到的
+    Q = torch.randn(batch_size, num_heads, seq_len, d_k)  # Query: 每个token想"查什么"
+    K = torch.randn(batch_size, num_heads, seq_len, d_k)  # Key: 每个token的"索引标签"
+    V = torch.randn(batch_size, num_heads, seq_len, d_v)  # Value: 每个token携带的"实际内容"
 
     print(f"\n输入形状:")
     print(f"  Q: {Q.shape}  K: {K.shape}  V: {V.shape}")
 
     # ── 1. 无 mask ──
     output, weights = scaled_dot_product_attention(Q, K, V)
+    # output: 加权求和后的结果，shape: [2, 1, 6, 32]
+    # weights: 注意力权重矩阵（softmax后的概率分布），shape: [2, 1, 6, 6]
     print(f"\n[无 mask] 输出 shape: {output.shape}")   # [2, 1, 6, 32]
     print(f"[无 mask] 权重 shape: {weights.shape}")   # [2, 1, 6, 6]
     print(f"[无 mask] 权重行和（应为1）: {weights[0, 0].sum(dim=-1).detach().numpy().round(3)}")
 
     # ── 2. Causal mask（Decoder 自注意力）──
-    causal_mask = create_causal_mask(seq_len)
+    causal_mask = create_causal_mask(seq_len)  # 下三角 mask：位置 i 只能看到 j<=i 的位置
     print(f"\nCausal mask (seq_len={seq_len}):\n{causal_mask[0, 0].int()}")
 
     output_causal, weights_causal = scaled_dot_product_attention(Q, K, V, mask=causal_mask)
+    # weights_causal 上三角应为 0（未来位置被屏蔽）
     print(f"\n[Causal mask] 注意力权重（第一个样本）:")
     print(weights_causal[0, 0].detach().numpy().round(3))
     print("（上三角应全为0，因为未来位置被屏蔽）")
 
+
     # ── 3. Padding mask ──
     # 假设 token ids，最后两个是 padding (id=0)
-    token_ids = torch.tensor([[5, 3, 7, 2, 0, 0],
-                               [1, 4, 6, 0, 0, 0]])
+    # 构造带 padding 的 token ids：id=0 表示 <pad> 填充位
+    token_ids = torch.tensor([[5, 3, 7, 2, 0, 0],     # 样本0：4个有效token + 2个pad
+                               [1, 4, 6, 0, 0, 0]])    # 样本1：3个有效token + 3个pad
     padding_mask = create_padding_mask(token_ids, pad_idx=0)
+    # padding_mask: True=有效位置, False=需要屏蔽的pad位置
     print(f"\nPadding mask shape: {padding_mask.shape}")  # [2, 1, 1, 6]
     print(f"Padding mask (样本0): {padding_mask[0, 0, 0].int()}")  # [1,1,1,1,0,0]
 

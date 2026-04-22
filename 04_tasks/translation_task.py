@@ -408,7 +408,12 @@ def evaluate_accuracy(model, dataset, num_samples: int = 200, device: torch.devi
     return correct / num_samples
 
 
-def run_translation_task():
+def run_translation_task(large_scale: bool = False):
+    """
+    Args:
+        large_scale: False → 10k 样本，max_len=6（默认，快速）
+                     True  → 50k 样本，max_len=9（更长序列，更充分训练）
+    """
     print("=" * 60)
     print("任务3: 序列到序列翻译（Encoder-Decoder）")
     print("=" * 60)
@@ -420,15 +425,25 @@ def run_translation_task():
     NUM_LAYERS = 3
     BATCH_SIZE = 64
     LR = 1e-3
-    EPOCHS = 30
+
+    if large_scale:
+        NUM_SAMPLES = 50000
+        MAX_SEQ_LEN = 9
+        EPOCHS = 20
+        print("\n规模: 大规模（50k 样本，max_len=9）")
+    else:
+        NUM_SAMPLES = 10000
+        MAX_SEQ_LEN = 6
+        EPOCHS = 30
+        print("\n规模: 标准（10k 样本，max_len=6）")
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    print(f"\n设备: {device}")
+    print(f"设备: {device}")
     print(f"源语言词表: {SRC_VOCAB_SIZE}, 目标语言词表: {TGT_VOCAB_SIZE}")
     print(f"目标词汇: {TGT_WORDS[4:]}")
 
     # 数据
-    train_dataset = NumberToWordDataset(num_samples=10000, max_len=6)
+    train_dataset = NumberToWordDataset(num_samples=NUM_SAMPLES, max_len=MAX_SEQ_LEN)
     train_loader = DataLoader(
         train_dataset, batch_size=BATCH_SIZE, shuffle=True,
         collate_fn=collate_fn, drop_last=True
@@ -447,6 +462,28 @@ def run_translation_task():
 
     total_params = sum(p.numel() for p in model.parameters())
     print(f"模型参数量: {total_params:,}")
+
+    # 打印数据流形状
+    sample_src, sample_tgt = next(iter(train_loader))
+    print(f"\n{'='*50}")
+    print("数据流形状追踪:")
+    print(f"{'='*50}")
+    print(f"  输入 src (源序列):  {sample_src.shape}   [batch={BATCH_SIZE}, src_len]")
+    print(f"  输入 tgt (目标序列):{sample_tgt.shape}   [batch, tgt_len]")
+
+    # Teacher Forcing 的切分
+    tgt_input = sample_tgt[:, :-1]   # Decoder 输入（去掉最后一个 token）
+    tgt_target = sample_tgt[:, 1:]   # 训练目标（去掉第一个 token）
+    print(f"  tgt_input (Decoder): {tgt_input.shape}   [batch, tgt_len-1] ← 去掉 <eos>")
+    print(f"  tgt_target (目标):  {tgt_target.shape}   [batch, tgt_len-1] ← 去掉 <bos>")
+
+    # 单个样本前向看形状
+    model.eval()
+    single_src = sample_src[:1].to(device)
+    single_tgt = tgt_input[:1].to(device)
+    with torch.no_grad():
+        logits_sample = model(single_src, single_tgt)
+    print(f"  logits (输出):       {logits_sample.shape}   [batch, tgt_len-1, tgt_vocab={TGT_VOCAB_SIZE}]")
 
     # 使用 AdamW + CosineAnnealing（小数据集更稳定）
     optimizer = torch.optim.AdamW(model.parameters(), lr=LR, weight_decay=1e-4)
@@ -493,5 +530,7 @@ def run_translation_task():
 
 
 if __name__ == "__main__":
-    run_translation_task()
+    import sys
+    large = "--large" in sys.argv
+    run_translation_task(large_scale=large)
 

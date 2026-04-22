@@ -150,34 +150,51 @@ if __name__ == "__main__":
     print("=" * 60)
 
     # 超参数
-    batch_size = 2
-    seq_len = 10
-    vocab_size = 1000
-    d_model = 64
+    batch_size = 2   # 每一批次可以同时处理多少个句子（并行计算）
+    seq_len = 10     # 每个句子的固定长度（token 数量）
+    vocab_size = 1000  # 词表大小：模型认识多少个不同的词（或字）
+    # 词表大小 = 模型认识多少个不同的词（或字）。
+    # token id 的范围是 [0, vocab_size-1]。
+    # 真实模型：BERT 约 30000，GPT-2 约 50000。
+    # 这里用 1000 只是演示。
+    '''
+    vocab = {
+    "<pad>": 0,    # 特殊token：填充
+    "<unk>": 1,    # 特殊token：未知词
+    "我":    10,
+    "你":    11,
+    "他":    12,
+    "喜欢":  100,
+    "讨厌":  101,
+    "吃饭":  200,
+    ...
+}
+    '''
+    d_model = 64      # 嵌入维度：每个 token 映射成多长的向量（原论文用 512，这里演示用 64）
 
-    # 构造随机 token ids
+    # 构造随机 token ids：模拟一个 batch 的输入，每个值代表一个 token 的 id
     x = torch.randint(0, vocab_size, (batch_size, seq_len))
-    print(f"\n输入 token ids shape: {x.shape}")  # [2, 10]
+    print(f"\n输入 token ids shape: {x.shape}")  # [2, 10] → 2个句子，每个10个token
 
     # ── Token Embedding ──
     token_emb = TokenEmbedding(vocab_size=vocab_size, d_model=d_model)
-    emb_out = token_emb(x)
-    print(f"Token Embedding 输出 shape: {emb_out.shape}")  # [2, 10, 64]
+    emb_out = token_emb(x)  # 查表：把每个 token id 转换成 d_model 维向量，并乘以 √d_model 缩放
+    print(f"Token Embedding 输出 shape: {emb_out.shape}")  # [2, 10, 64] → 每个token变成64维向量
 
     # ── Positional Encoding ──
     pos_enc = PositionalEncoding(d_model=d_model, dropout=0.0)
-    pos_out = pos_enc(emb_out)
-    print(f"+ Positional Encoding 输出 shape: {pos_out.shape}")  # [2, 10, 64]
+    pos_out = pos_enc(emb_out)  # 加上位置信息：token向量 + sin/cos位置编码
+    print(f"+ Positional Encoding 输出 shape: {pos_out.shape}")  # [2, 10, 64] → 形状不变，融合了位置信息
 
-    # ── 完整 TransformerEmbedding ──
+    # ── 完整 TransformerEmbedding（一步到位）──
     transformer_emb = TransformerEmbedding(vocab_size=vocab_size, d_model=d_model)
-    full_out = transformer_emb(x)
+    full_out = transformer_emb(x)  # 等价于先 Token Embedding 再加 Positional Encoding
     print(f"TransformerEmbedding 输出 shape: {full_out.shape}")  # [2, 10, 64]
 
-    # 验证位置编码的不同位置值不同
+    # 验证位置编码的不同位置值不同（用全零输入排除语义干扰，只看位置编码的效果）
     pe_module = PositionalEncoding(d_model=d_model, dropout=0.0)
-    dummy = torch.zeros(1, 5, d_model)
-    pe_out = pe_module(dummy)
+    dummy = torch.zeros(1, 5, d_model)  # 全零张量，shape: [1, 5, 64]，模拟5个位置的空输入
+    pe_out = pe_module(dummy)  # 输出 = 0 + 位置编码，所以输出就是纯位置编码
     print(f"\n位置 0 的编码 (前8维): {pe_out[0, 0, :8].detach().numpy().round(3)}")
     print(f"位置 1 的编码 (前8维): {pe_out[0, 1, :8].detach().numpy().round(3)}")
     print(f"位置 2 的编码 (前8维): {pe_out[0, 2, :8].detach().numpy().round(3)}")

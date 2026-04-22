@@ -447,15 +447,17 @@ if __name__ == "__main__":
     # T5-tiny 配置
     d_model = 128
     model = EncoderDecoderTransformer(
-        vocab_size=1000,
+        vocab_size=1000,   # 共享词表（T5 风格）
         d_model=d_model,
-        num_heads=4,
+        num_heads=4,        # d_k = 128/4 = 32
         num_layers=2,
         d_ff=512,
         dropout=0.0,
     )
     total_params = sum(p.numel() for p in model.parameters())
-    print(f"\nT5-tiny 参数量: {total_params:,}")
+    print(f"\n配置: vocab={1000}, d_model={d_model}, heads=4, layers=2, d_ff=512")
+    print(f"      d_k = {d_model} / 4 = {d_model // 4}")
+    print(f"T5-tiny 参数量: {total_params:,}")
 
     batch_size = 2
     src_len = 12
@@ -465,11 +467,23 @@ if __name__ == "__main__":
     tgt = torch.randint(1, 1000, (batch_size, tgt_len))
     src[0, -3:] = 0  # padding
 
-    print(f"\nsrc shape: {src.shape}, tgt shape: {tgt.shape}")
+    print(f"\n{'='*50}")
+    print("逐步跟踪 T5 前向传播:")
+    print(f"{'='*50}")
+    print(f"  src (源序列):           {src.shape}             [batch={batch_size}, src_len={src_len}]")
+    print(f"  tgt (目标序列，右移):    {tgt.shape}             [batch, tgt_len={tgt_len}]")
 
-    # 前向传播
-    logits = model(src, tgt)
-    print(f"logits shape: {logits.shape}")  # [2, 8, 1000]
+    # Step 1: Encode
+    enc_output = model.encode(src)
+    print(f"  Encoder 输出:           {enc_output.shape}         [batch, src_len, d_model]")
+
+    # Step 2: Decode
+    dec_output = model.decode(tgt, enc_output)
+    print(f"  Decoder 输出:           {dec_output.shape}         [batch, tgt_len, d_model]")
+
+    # Step 3: LM Head
+    logits = model.lm_head(dec_output)
+    print(f"  LM Head (logits):       {logits.shape}            [batch, tgt_len, vocab]")
 
     # 计算翻译损失
     target_ids = torch.randint(1, 1000, (batch_size, tgt_len))

@@ -375,12 +375,19 @@ if __name__ == "__main__":
     segment_ids = torch.zeros_like(input_ids)
     segment_ids[1, 8:] = 1  # 第二个句子用 segment 1
 
-    print(f"\n输入 input_ids shape: {input_ids.shape}")
-    print(f"segment_ids[1]: {segment_ids[1].tolist()}")
+    print(f"\n{'='*50}")
+    print("逐步跟踪 BERT 前向传播:")
+    print(f"{'='*50}")
+    print(f"  input_ids (token ids):   {input_ids.shape}        [batch={batch_size}, seq_len={seq_len}]")
+    print(f"  segment_ids (句子编号): {segment_ids.shape}     [batch, seq_len] (0=第一句, 1=第二句)")
+
+    # Embedding（BERT 的 embedding 是独立的 BertEmbeddings 模块）
+    embeddings = bert.embeddings(input_ids, segment_ids)
+    print(f"  Embedding (Token+Pos+Seg): {embeddings.shape}      [batch, seq_len, d_model]")
 
     last_hidden, cls_out = bert(input_ids, segment_ids)
-    print(f"\n[Encoder] last_hidden shape: {last_hidden.shape}")  # [2, 16, 128]
-    print(f"[Encoder] cls_output shape: {cls_out.shape}")          # [2, 128]
+    print(f"\n  last_hidden (每层输出):  {last_hidden.shape}     [batch, seq_len, d_model] ← 用于序列标注/NER")
+    print(f"  cls_output ([CLS]向量):  {cls_out.shape}         [batch, d_model]         ← 用于分类")
 
     # ── 文本分类 ──
     classifier = BertForClassification(bert, num_classes=3)

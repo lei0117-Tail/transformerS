@@ -329,13 +329,13 @@ if __name__ == "__main__":
     print("Transformer Decoder")
     print("=" * 60)
 
-    vocab_size = 5000
-    d_model = 128
-    num_heads = 4
-    num_layers = 2
+    vocab_size = 5000     # 词表大小
+    d_model = 128         # 模型维度：每个 token 的向量长度
+    num_heads = 4         # 注意力头数（d_k = 128/4 = 32）
+    num_layers = 2         # Decoder 层数
     batch_size = 2
-    src_len = 15
-    tgt_len = 10
+    src_len = 15           # Encoder 输入序列长度
+    tgt_len = 10           # Decoder 输入序列长度
 
     decoder = Decoder(
         vocab_size=vocab_size,
@@ -345,7 +345,20 @@ if __name__ == "__main__":
         dropout=0.0,
     )
     total_params = sum(p.numel() for p in decoder.parameters())
-    print(f"\n参数总量: {total_params:,}")
+    print(f"\n配置: vocab_size={vocab_size}, d_model={d_model}, heads={num_heads}, layers={num_layers}")
+    print(f"      d_k = d_model / num_heads = {d_model} / {num_heads} = {d_model // num_heads}")
+    print(f"参数总量: {total_params:,}")
+
+    # 打印关键组件权重形状
+    print(f"\n{'='*50}")
+    print("各组件权重形状:")
+    print(f"{'='*50}")
+    layer0 = decoder.layers[0]
+    print(f"  Token Embedding:       {decoder.token_embedding.weight.shape}   [vocab, d_model] = [{vocab_size}, {d_model}]")
+    print(f"  Layer0 Self-Attn W_Q:  {layer0.self_attn.W_Q.weight.shape}      [d_model, d_model] = [{d_model}, {d_model}]")
+    print(f"  Layer0 Cross-Attn W_Q: {layer0.cross_attn.W_Q.weight.shape}     [d_model, d_model]")
+    print(f"  Layer0 FFN linear1:     {layer0.ffn.net[0].weight.shape}          [d_ff=512, d_model]")
+    print(f"  Layer0 FFN linear2:     {layer0.ffn.net[3].weight.shape}          [d_model, d_ff=512]")
 
     # 模拟输入
     tgt = torch.randint(1, vocab_size, (batch_size, tgt_len))
@@ -357,11 +370,28 @@ if __name__ == "__main__":
     src[1, -3:] = 0
     src_mask = (src != 0).unsqueeze(1).unsqueeze(2)
 
-    print(f"\ntgt shape: {tgt.shape}")
-    print(f"enc_output shape: {enc_output.shape}")
+    print(f"\n{'='*50}")
+    print("逐步跟踪 Decoder 前向传播:")
+    print(f"{'='*50}")
+    print(f"  tgt (Decoder 输入):     {tgt.shape}              [batch={batch_size}, tgt_len={tgt_len}]")
+    print(f"  enc_output (Encoder):   {enc_output.shape}        [batch, src_len={src_len}, d_model={d_model}]")
+    print(f"  src_mask:               {src_mask.shape}          [batch, 1, 1, src_len]")
 
+    # Embedding
+    emb_out = decoder.token_embedding(tgt) * math.sqrt(decoder.d_model)
+    print(f"  Token Embedding 后:     {emb_out.shape}            [batch, tgt_len, d_model]")
+
+    # tgt_mask
+    tgt_mask = decoder.make_tgt_mask(tgt)
+    print(f"  tgt_mask (causal+pad):  {tgt_mask.shape}          [batch, 1, tgt_len, tgt_len]")
+
+    # 只跑第一层看中间结果
+    dec_layer0_out = decoder.layers[0](emb_out, enc_output, tgt_mask=tgt_mask, src_mask=src_mask)
+    print(f"  经过 DecoderLayer 0:    {dec_layer0_out.shape}     [batch, tgt_len, d_model] ← 形状不变！")
+
+    # 完整前向
     output = decoder(tgt, enc_output, src_mask=src_mask)
-    print(f"Decoder 输出 shape: {output.shape}")  # [2, 10, 128]
+    print(f"\n  最终输出 ({num_layers}层后): {output.shape}            [batch, tgt_len, d_model]")
 
     # 验证 causal mask（位置 i 只能看到 j<=i）
     tgt_mask = decoder.make_tgt_mask(tgt)

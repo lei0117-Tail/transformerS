@@ -179,14 +179,14 @@ if __name__ == "__main__":
     print("Step 6: Encoder Layer (完整)")
     print("=" * 60)
 
-    batch_size = 2
-    seq_len = 12
-    d_model = 128
-    num_heads = 8
-    d_ff = 512
+    batch_size = 2     # 批次大小
+    seq_len = 12       # 序列长度（每个样本的 token 数）
+    d_model = 128      # 模型维度
+    num_heads = 8      # 注意力头数（d_model 必须能被 num_heads 整除：128/8=16）
+    d_ff = 512         # FFN 中间层维度（4 × d_model）
 
-    x = torch.randn(batch_size, seq_len, d_model)
-    print(f"\n输入 shape: {x.shape}")
+    x = torch.randn(batch_size, seq_len, d_model)  # 输入：模拟 Embedding 层的输出
+    print(f"\n输入 shape: {x.shape}")  # [2, 12, 128]
 
     # ── Pre-LN Encoder 层 ──
     encoder_layer_pre = EncoderLayer(
@@ -194,9 +194,10 @@ if __name__ == "__main__":
         num_heads=num_heads,
         d_ff=d_ff,
         dropout=0.0,
-        pre_norm=True,
+        pre_norm=True,   # Pre-LN 模式：先归一化再子层（训练更稳定，推荐）
     )
     out_pre = encoder_layer_pre(x)
+    # 数据流: x → LayerNorm → Self-Attention → +残差 → LayerNorm → FFN → +残差 → 输出
     print(f"\n[Pre-LN] 输出 shape: {out_pre.shape}")    # [2, 12, 128]
     print(f"[Pre-LN] 注意力权重 shape: {encoder_layer_pre.attention_weights.shape}")
 
@@ -206,16 +207,18 @@ if __name__ == "__main__":
         num_heads=num_heads,
         d_ff=d_ff,
         dropout=0.0,
-        pre_norm=False,
+        pre_norm=False,  # Post-LN 模式：先子层再归一化（原论文方式，需要 warm-up）
     )
     out_post = encoder_layer_post(x)
+    # 数据流: x → Self-Attention → +残差 → LayerNorm → FFN → +残差 → LayerNorm → 输出
     print(f"\n[Post-LN] 输出 shape: {out_post.shape}")  # [2, 12, 128]
 
     # ── 带 padding mask ──
     # 假设序列后 2 个 token 是 padding
-    pad_mask = torch.ones(batch_size, 1, 1, seq_len)
-    pad_mask[:, :, :, -2:] = 0  # 最后 2 个位置被屏蔽
+    pad_mask = torch.ones(batch_size, 1, 1, seq_len)  # 初始全为 1（全部有效）
+    pad_mask[:, :, :, -2:] = 0  # 最后 2 个位置设为 0（标记为 padding，需屏蔽）
     out_masked = encoder_layer_pre(x, src_mask=pad_mask)
+    # 带 mask 的输出：模型在计算注意力时会忽略后 2 个位置的 padding
     print(f"\n[带 Mask] 输出 shape: {out_masked.shape}")
 
     # ── 参数量统计 ──
