@@ -556,7 +556,7 @@ output = gamma * x_norm + beta                 # 可学习缩放和偏移
 - `γ` 初始化为 **1**，`β` 初始化为 **0**（可学习参数）
 - **为什么需要？** 防止数值爆炸/消失，稳定训练；不依赖 batch size，适合变长序列
 
-##### Add（残差连接 Residual Connection）
+### 05 Add（残差连接 Residual Connection）
 
 **公式**：`output = 原始输入 + 子层输出`（代码就是一个 `+` 号）
 
