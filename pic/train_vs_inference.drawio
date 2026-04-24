@@ -1,0 +1,271 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="draw.io" version="29.6.6">
+  <diagram name="Train vs Inference" id="train-inference">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="&lt;b&gt;&lt;font style=&quot;font-size: 22px;&quot;&gt;Transformer 训练 vs 推理 数据流对比&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="480" y="8" width="460" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== LEFT SIDE: TRAINING ==================== -->
+        <mxCell id="train_container" value="&lt;b&gt;📚 训练阶段（Teacher Forcing）&lt;/b&gt;" style="swimlane;startSize=34;fillColor=#e8f5e9;strokeColor=#4caf50;fontColor=#2e7d32;horizontal=1;container=1;collapsible=0;rounded=1;arcSize=6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="30" y="60" width="800" height="580" as="geometry" />
+        </mxCell>
+
+        <!-- Training input -->
+        <mxCell id="train_src" value="&lt;b&gt;源句子&lt;/b&gt;&lt;br&gt;&quot;I love you&quot;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;[12, 25, 38]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;" vertex="1" parent="train_container">
+          <mxGeometry x="40" y="50" width="140" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="train_tgt_in" value="&lt;b&gt;Decoder 输入&lt;/b&gt;&lt;br&gt;&amp;lt;start&amp;gt; 我 喜欢 你&amp;#xa;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;(偏移一位)&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;[55, 10, 100, 11]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;dashed=1;" vertex="1" parent="train_container">
+          <mxGeometry x="480" y="45" width="160" height="72" as="geometry" />
+        </mxCell>
+        <mxCell id="train_tgt_exp" value="&lt;b&gt;期望输出&lt;/b&gt;&lt;br&gt;我 喜欢 你 &amp;lt;/end&amp;gt;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;[10, 100, 11, 1]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=11;" vertex="1" parent="train_container">
+          <mxGeometry x="670" y="45" width="115" height="68" as="geometry" />
+        </mxCell>
+
+        <!-- Encoder box (training) -->
+        <mxCell id="train_enc" value="&lt;b&gt;Encoder&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;×N 层 Self-Attn + FFN&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#333333;fontSize=11;arcSize=14;" vertex="1" parent="train_container">
+          <mxGeometry x="35" y="145" width="150" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="train_enc_out" value="[1, 3, 512]" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#6c8ebf;fontSize=9;" vertex="1" parent="train_container">
+          <mxGeometry x="65" y="208" width="90" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Decoder box (training) - PARALLEL -->
+        <mxCell id="train_dec" value="&lt;b&gt;Decoder&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;×M 层（并行处理全部）&lt;/font&gt;&lt;br&gt;MaskedSelf-Attn → Cross-Attn → FFN" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=11;arcSize=14;" vertex="1" parent="train_container">
+          <mxGeometry x="450" y="135" width="200" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- Parallel indicator -->
+        <mxCell id="train_parallel" value="⚡ &lt;b&gt;一次 Forward Pass 并行处理！&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#4caf50&quot; font-size=&quot;10&quot;&gt;GPU 加速，所有位置同时计算&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;fontColor=#2e7d32;fontSize=11;dashed=1;" vertex="1" parent="train_container">
+          <mxGeometry x="300" y="240" width="220" height="46" as="geometry" />
+        </mxCell>
+
+        <!-- Linear + Softmax -->
+        <mxCell id="train_linear" value="Linear + Softmax" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#333333;fontSize=11;" vertex="1" parent="train_container">
+          <mxGeometry x="485" y="305" width="130" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="train_logits" value="logits [1, 4, vocab]" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333333;fontSize=10;" vertex="1" parent="train_container">
+          <mxGeometry x="475" y="360" width="150" height="32" as="geometry" />
+        </mxCell>
+
+        <!-- Loss -->
+        <mxCell id="train_loss" value="&lt;b&gt;CrossEntropy Loss&lt;/b&gt;&lt;br&gt;-log P(正确答案)&lt;br&gt;&lt;font color=&quot;#b85450&quot; font-size=&quot;10&quot;&gt;↓ 反向传播 ↓&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=11;" vertex="1" parent="train_container">
+          <mxGeometry x="475" y="420" width="155" height="90" as="geometry" />
+        </mxCell>
+
+        <!-- Training arrows -->
+        <mxCell id="ta1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="train_container" source="train_src" target="train_enc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ta2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="train_container" source="train_tgt_in" target="train_dec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ta3" value="K,V" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9673a6;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="train_container" source="train_enc" target="train_dec">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ta4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="train_container" source="train_dec" target="train_linear">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ta5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d6b656;strokeWidth=1.5;" edge="1" parent="train_container" source="train_linear" target="train_logits">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ta6" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="train_container" source="train_logits" target="train_loss">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="ta7" value="label" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;strokeWidth=1.5;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="train_container" source="train_tgt_exp" target="train_loss">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Training features -->
+        <mxCell id="train_features" value="&lt;b&gt;✅ 训练特点&lt;/b&gt;&lt;br&gt;• 一次性输入整个序列（并行）&lt;br&gt;• 使用 Ground Truth 作为输入（Teacher Forcing）&lt;br&gt;• Causal Mask 防止偷看未来&lt;br&gt;• 时间复杂度: O(1) 一个 forward pass&lt;br&gt;• ⚠️ 训练-推理 gap：训练时永远看到正确答案" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#cccccc;fontColor=#333333;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="train_container">
+          <mxGeometry x="35" y="400" width="340" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Teacher forcing note -->
+        <mxCell id="tf_note" value="&lt;font color=&quot;#b85450&quot; font-size=&quot;9&quot;&gt;📌 Teacher Forcing: 每个位置的输入是前一个位置的真实答案，不是模型预测&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="train_container">
+          <mxGeometry x="260" y="118" width="320" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== RIGHT SIDE: INFERENCE ==================== -->
+        <mxCell id="inf_container" value="&lt;b&gt;🚀 推理阶段（Autoregressive / 自回归）&lt;/b&gt;" style="swimlane;startSize=34;fillColor=#e3f2fd;strokeColor=#1976d2;fontColor=#1565c0;horizontal=1;container=1;collapsible=0;rounded=1;arcSize=6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="870" y="60" width="850" height="580" as="geometry" />
+        </mxCell>
+
+        <!-- Inference source -->
+        <mxCell id="inf_src" value="&lt;b&gt;源句子&lt;/b&gt;&lt;br&gt;&quot;I love you&quot;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;[12, 25, 38]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;" vertex="1" parent="inf_container">
+          <mxGeometry x="30" y="50" width="140" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="inf_enc" value="&lt;b&gt;Encoder&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#1976d2&quot; font-size=&quot;9&quot;&gt;只算一次！缓存复用&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#333333;fontSize=11;arcSize=14;" vertex="1" parent="inf_container">
+          <mxGeometry x="30" y="140" width="140" height="52" as="geometry" />
+        </mxCell>
+        <mxCell id="inf_enc_cache" value="[1, 3, 512] ✅ 缓存" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=9;dashed=1;" vertex="1" parent="inf_container">
+          <mxGeometry x="35" y="205" width="130" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- Inference steps -->
+        <!-- Step 1 -->
+        <mxCell id="step1_box" value="&lt;b&gt;Step 1&lt;/b&gt;" style="swimlane;startSize=24;fillColor=#fff8e1;strokeColor=#ffa000;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;fontSize=11;" vertex="1" parent="inf_container">
+          <mxGeometry x="230" y="45" width="190" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="step1_input" value='输入: [&amp;lt;start&amp;gt;]' style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="step1_box">
+          <mxGeometry x="15" y="34" width="90" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="step1_dec" value="Decoder" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=10;" vertex="1" parent="step1_box">
+          <mxGeometry x="115" y="34" width="60" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="step1_output" value='→ argmax → &lt;b&gt;&quot;我&quot;&lt;/b&gt;' style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="step1_box">
+          <mxGeometry x="30" y="78" width="130" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- Step 2 -->
+        <mxCell id="step2_box" value="&lt;b&gt;Step 2&lt;/b&gt;" style="swimlane;startSize=24;fillColor=#fff8e1;strokeColor=#ffa000;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;fontSize=11;" vertex="1" parent="inf_container">
+          <mxGeometry x="450" y="45" width="190" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="step2_input" value='输入: [&amp;lt;start&amp;gt;, 我]' style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="step2_box">
+          <mxGeometry x="15" y="34" width="105" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="step2_dec" value="Decoder" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=10;" vertex="1" parent="step2_box">
+          <mxGeometry x="125" y="34" width="55" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="step2_output" value='→ argmax → &lt;b&gt;&quot;喜欢&quot;&lt;/b&gt;' style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="step2_box">
+          <mxGeometry x="22" y="78" width="145" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- Step 3 -->
+        <mxCell id="step3_box" value="&lt;b&gt;Step 3&lt;/b&gt;" style="swimlane;startSize=24;fillColor=#fff8e1;strokeColor=#ffa000;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;fontSize=11;" vertex="1" parent="inf_container">
+          <mxGeometry x="670" y="45" width="160" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="step3_input" value='输入: [&amp;lt;start&amp;gt;, 我, 喜欢]' style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=9;" vertex="1" parent="step3_box">
+          <mxGeometry x="10" y="34" width="120" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="step3_dec" value="Dec" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=10;" vertex="1" parent="step3_box">
+          <mxGeometry x="132" y="34" width="18" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="step3_output" value='→ &lt;b&gt;&quot;你&quot;&lt;/b&gt;' style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="step3_box">
+          <mxGeometry x="20" y="78" width="110" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- Step 4 -->
+        <mxCell id="step4_box" value="&lt;b&gt;Step 4&lt;/b&gt;" style="swimlane;startSize=24;fillColor=#fff8e1;strokeColor=#ffa000;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;fontSize=11;" vertex="1" parent="inf_container">
+          <mxGeometry x="230" y="195" width="190" height="125" as="geometry" />
+        </mxCell>
+        <mxCell id="step4_input" value='输入: [..., 你]' style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="step4_box">
+          <mxGeometry x="15" y="34" width="90" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="step4_dec" value="Decoder" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=10;" vertex="1" parent="step4_box">
+          <mxGeometry x="115" y="34" width="60" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="step4_output" value='→ &lt;b&gt;&quot;&amp;lt;/end&amp;gt;&quot;&lt;/b&gt; ✅ 停止!' style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="step4_box">
+          <mxGeometry x="17" y="78" width="145" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- Step arrows between boxes -->
+        <mxCell id="sa_1_2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ffa000;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="inf_container" source="step1_box" target="step2_box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa_2_3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ffa000;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="inf_container" source="step2_box" target="step3_box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa_3_4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#ffa000;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="inf_container" source="step3_box" target="step4_box">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="750" y="185" />
+              <mxPoint x="325" y="185" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Encoder to each step K,V arrows -->
+        <mxCell id="enc_s1" value="K,V" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;strokeWidth=1.5;dashed=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="inf_container" source="inf_enc_cache" target="step1_box">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="100" y="250" />
+              <mxPoint x="325" y="250" />
+              <mxPoint x="325" y="45" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="enc_s2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;strokeWidth=1;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="inf_container" source="inf_enc_cache" target="step2_box">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Final output -->
+        <mxCell id="final_output" value="&lt;b&gt;最终输出&lt;/b&gt;&lt;br&gt;&lt;font size=&quot;14&quot;&gt;“我喜欢你”&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=12;arcSize=20;" vertex="1" parent="inf_container">
+          <mxGeometry x="500" y="210" width="170" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="to_final" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="inf_container" source="step4_box" target="final_output">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Inference features -->
+        <mxCell id="inf_features" value="&lt;b&gt;✅ 推理特点&lt;/b&gt;&lt;br&gt;• 逐词生成（串行，不能并行）&lt;br&gt;• 每步输入 = 上一步的预测结果（不是 GT）&lt;br&gt;• Encoder 只算一次，输出缓存复用&lt;br&gt;• 时间复杂度: O(tgt_len) 个 forward pass&lt;br&gt;• ⚠️ 错误累积：一步错步步错" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#cccccc;fontColor=#333333;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="inf_container">
+          <mxGeometry x="500" y="290" width="310" height="120" as="geometry" />
+        </mxCell>
+
+        <!-- Serial indicator -->
+        <mxCell id="serial_note" value="⏱️ &lt;b&gt;串行逐词生成！每步一个 forward pass&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#1976d2&quot; font-size=&quot;10&quot;&gt;瓶颈在 Decoder 循环（Encoder 可忽略）&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;fontColor=#1565c0;fontSize=11;dashed=1;" vertex="1" parent="inf_container">
+          <mxGeometry x="250" y="350" width="220" height="46" as="geometry" />
+        </mxCell>
+
+        <!-- Source to encoder arrow -->
+        <mxCell id="ia1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=1.5;" edge="1" parent="inf_container" source="inf_src" target="inf_enc">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== BOTTOM COMPARISON TABLE ==================== -->
+        <mxCell id="compare_table" value="&lt;b&gt;📊 核心对比总结&lt;/b&gt;" style="swimlane;startSize=28;fillColor=#fafafa;strokeColor=#999999;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="30" y="670" width="1690" height="175" as="geometry" />
+        </mxCell>
+
+        <!-- Table header row -->
+        <mxCell id="th_dim" value="&lt;b&gt;对比维度&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#999999;fontColor=#333333;fontSize=11;fontStyle=1;" vertex="1" parent="compare_table">
+          <mxGeometry x="15" y="38" width="150" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="th_train" value="&lt;b&gt;📚 训练（Teacher Forcing）&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;fontColor=#2e7d32;fontSize=11;fontStyle=1;" vertex="1" parent="compare_table">
+          <mxGeometry x="170" y="38" width="380" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="th_inf" value="&lt;b&gt;🚀 推理（Autoregressive）&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e3f2fd;strokeColor=#1976d2;fontColor=#1565c0;fontSize=11;fontStyle=1;" vertex="1" parent="compare_table">
+          <mxGeometry x="555" y="38" width="380" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="th_key" value="&lt;b&gt;🔑 关键点&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333333;fontSize=11;fontStyle=1;" vertex="1" parent="compare_table">
+          <mxGeometry x="940" y="38" width="720" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- Row 1: Input -->
+        <mxCell id="td1_dim" value="输入方式" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#333333;fontSize=10;" vertex="1" parent="compare_table">
+          <mxGeometry x="15" y="78" width="150" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="td1_train" value="一次性输入完整目标序列（偏移一位）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#333333;fontSize=10;" vertex="1" parent="compare_table">
+          <mxGeometry x="170" y="78" width="380" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="td1_inf" value="逐步拼接已生成的词（从 &amp;lt;start&amp;gt; 开始）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#333333;fontSize=10;" vertex="1" parent="compare_table">
+          <mxGeometry x="555" y="78" width="380" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="td1_key" value="训练时可以并行；推理时必须等上一步完成" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#666666;fontSize=10;" vertex="1" parent="compare_table">
+          <mxGeometry x="940" y="78" width="720" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- Row 2: Data Source -->
+        <mxCell id="td2_dim" value="数据来源" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f9f9;strokeColor=#cccccc;fontColor=#333333;fontSize=10;" vertex="1" parent="compare_table">
+          <mxGeometry x="15" y="118" width="150" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="td2_train" value="Ground Truth（标准答案/真实标签）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f9f9;strokeColor=#cccccc;fontColor=#333333;fontSize=10;" vertex="1" parent="compare_table">
+          <mxGeometry x="170" y="118" width="380" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="td2_inf" value="模型自己的预测结果（argmax 或 sampling）" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f9f9;strokeColor=#cccccc;fontColor=#333333;fontSize=10;" vertex="1" parent="compare_table">
+          <mxGeometry x="555" y="118" width="380" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="td2_key" value="推理时如果中间出错，错误会累积传播" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f9f9;strokeColor=#cccccc;fontColor=#666666;fontSize=10;" vertex="1" parent="compare_table">
+          <mxGeometry x="940" y="118" width="720" height="36" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+

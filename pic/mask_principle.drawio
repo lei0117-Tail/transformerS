@@ -1,0 +1,426 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="draw.io" version="29.6.6">
+  <diagram name="Mask Principle" id="mask-principle">
+    <mxGraphModel dx="1600" dy="1200" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1800" pageHeight="1300" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="&lt;b&gt;&lt;font style=&quot;font-size: 22px;&quot;&gt;Transformer Mask 原理详解&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="580" y="10" width="400" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== CAUSAL MASK ==================== -->
+        <mxCell id="causal_container" value="&lt;b&gt;🔒 Causal Mask（因果掩码 / 下三角掩码）&lt;/b&gt;" style="swimlane;startSize=32;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;arcSize=6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="30" y="60" width="850" height="520" as="geometry" />
+        </mxCell>
+
+        <!-- Causal mask description -->
+        <mxCell id="causal_desc" value="&lt;b&gt;作用&lt;/b&gt;：防止 Decoder 在训练时&quot;偷看未来&quot;——生成第 t 个词时，只能看到前 t-1 个词&amp;#xa;&lt;b&gt;使用位置&lt;/b&gt;：Decoder 的 Masked Self-Attention（第一层子层）&amp;#xa;&lt;b&gt;原理&lt;/b&gt;：将注意力分数矩阵的上三角区域填充为 -∞，Softmax 后变为 0" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#d6b656;fontColor=#333333;fontSize=10;align=left;spacingLeft=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="20" y="45" width="380" height="82" as="geometry" />
+        </mxCell>
+
+        <!-- Example sentence -->
+        <mxCell id="causal_example" value="&lt;b&gt;例句&lt;/b&gt;: &quot;我 喜欢 你 &amp;lt;/end&amp;gt;&quot;&amp;#xa;(seq_len = 4)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;" vertex="1" parent="causal_container">
+          <mxGeometry x="430" y="45" width="200" height="46" as="geometry" />
+        </mxCell>
+
+        <!-- Causal Mask Matrix - BEFORE softmax -->
+        <mxCell id="cm_before_title" value="&lt;b&gt;Mask 矩阵（加到注意力分数上之前）&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#333333;fontSize=11;" vertex="1" parent="causal_container">
+          <mxGeometry x="55" y="145" width="290" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Causal matrix visual (4x4) -->
+        <!-- Row headers -->
+        <mxCell id="cm_r0" value="&lt;b&gt;我&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;textAlignment=right;" vertex="1" parent="causal_container">
+          <mxGeometry x="15" y="172" width="35" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_r1" value="&lt;b&gt;喜&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;textAlignment=right;" vertex="1" parent="causal_container">
+          <mxGeometry x="15" y="212" width="35" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_r2" value="&lt;b&gt;欢&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;textAlignment=right;" vertex="1" parent="causal_container">
+          <mxGeometry x="15" y="252" width="35" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_r3" value="&lt;b&gt;你&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;textAlignment=right;" vertex="1" parent="causal_container">
+          <mxGeometry x="15" y="292" width="35" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- Column headers -->
+        <mxCell id="cm_c0" value="&lt;b&gt;我&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="55" y="168" width="60" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_c1" value="&lt;b&gt;喜&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="118" y="168" width="60" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_c2" value="&lt;b&gt;欢&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="181" y="168" width="60" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_c3" value="&lt;b&gt;你&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="244" y="168" width="60" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Matrix cells row 0 -->
+        <mxCell id="cm_00" value="0" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="55" y="194" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_01" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="118" y="194" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_02" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="181" y="194" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_03" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="244" y="194" width="60" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- Row 1 -->
+        <mxCell id="cm_10" value="✓" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#2e7d32;fontSize=12;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="55" y="234" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_11" value="0" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="118" y="234" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_12" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="181" y="234" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_13" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="244" y="234" width="60" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- Row 2 -->
+        <mxCell id="cm_20" value="✓" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#2e7d32;fontSize=12;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="55" y="274" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_21" value="✓" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#2e7d32;fontSize=12;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="118" y="274" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_22" value="0" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="181" y="274" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_23" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=11;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="244" y="274" width="60" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- Row 3 -->
+        <mxCell id="cm_30" value="✓" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#2e7d32;fontSize=12;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="55" y="314" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_31" value="✓" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#2e7d32;fontSize=12;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="118" y="314" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_32" value="✓" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#2e7d32;fontSize=12;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="181" y="314" width="60" height="38" as="geometry" />
+        </mxCell>
+        <mxCell id="cm_33" value="0" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;fontStyle=1;" vertex="1" parent="causal_container">
+          <mxGeometry x="244" y="314" width="60" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow to after softmax -->
+        <mxCell id="arrow_softmax" value="Softmax →" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=2;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="causal_container" source="cm_33" target="cm_after_title">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Causal Mask AFTER softmax -->
+        <mxCell id="cm_after_title" value="&lt;b&gt;Softmax 后的注意力权重&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;-∞ 变为 0，每行和为 1&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#333333;fontSize=11;" vertex="1" parent="causal_container">
+          <mxGeometry x="370" y="155" width="230" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- After softmax matrix -->
+        <!-- Row headers -->
+        <mxCell id="am_r0" value="&lt;b&gt;我&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;textAlignment=right;" vertex="1" parent="causal_container">
+          <mxGeometry x="330" y="195" width="35" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_r1" value="&lt;b&gt;喜&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;textAlignment=right;" vertex="1" parent="causal_container">
+          <mxGeometry x="330" y="232" width="35" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_r2" value="&lt;b&gt;欢&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;textAlignment=right;" vertex="1" parent="causal_container">
+          <mxGeometry x="330" y="269" width="35" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_r3" value="&lt;b&gt;你&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;textAlignment=right;" vertex="1" parent="causal_container">
+          <mxGeometry x="330" y="306" width="35" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- After softmax values -->
+        <mxCell id="am_00" value="&lt;b&gt;1.00&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="370" y="195" width="56" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_01" value="0.00" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#ef5350;fontColor=#999999;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="429" y="195" width="52" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_02" value="0.00" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#ef5350;fontColor=#999999;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="484" y="195" width="52" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_03" value="0.00" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#ef5350;fontColor=#999999;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="539" y="195" width="52" height="34" as="geometry" />
+        </mxCell>
+
+        <mxCell id="am_10" value="0.47" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="370" y="232" width="56" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_11" value="&lt;b&gt;0.53&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="429" y="232" width="52" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_12" value="0.00" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#ef5350;fontColor=#999999;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="484" y="232" width="52" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_13" value="0.00" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#ef5350;fontColor=#999999;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="539" y="232" width="52" height="34" as="geometry" />
+        </mxCell>
+
+        <mxCell id="am_20" value="0.31" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="370" y="269" width="56" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_21" value="0.28" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="429" y="269" width="52" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_22" value="&lt;b&gt;0.41&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="484" y="269" width="52" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_23" value="0.00" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fce4ec;strokeColor=#ef5350;fontColor=#999999;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="539" y="269" width="52" height="34" as="geometry" />
+        </mxCell>
+
+        <mxCell id="am_30" value="0.18" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="370" y="306" width="56" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_31" value="0.16" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="429" y="306" width="52" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_32" value="0.15" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="484" y="306" width="52" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="am_33" value="&lt;b&gt;0.51&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="539" y="306" width="52" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Causal mask code snippet -->
+        <mxCell id="causal_code" value="&lt;b&gt;代码实现&lt;/b&gt;&amp;#xa;&amp;#xa;def make_causal_mask(seq_len):&amp;#xa;    # 创建下三角矩阵（下三角=0，上三角=-inf）&amp;#xa;    mask = torch.triu(torch.full(&amp;#xa;        (seq_len, seq_len), float('-inf')&amp;#xa;    ), diagonal=1)&amp;#xa;    return mask.bool()  # 返回 bool 类型" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#cccccc;fontColor=#333333;fontSize=9;align=left;spacingLeft=8;fontFamily=Courier New;" vertex="1" parent="causal_container">
+          <mxGeometry x="20" y="360" width="300" height="140" as="geometry" />
+        </mxCell>
+
+        <!-- Causal mask intuition -->
+        <mxCell id="causal_intuition" value="&lt;b&gt;🧠 直觉理解&lt;/b&gt;&amp;#xa;&amp;#xa;生成“我”时：只能看到自己 → 关注度 100% 在自己身上&amp;#xa;生成“喜欢”时：能看到[“我”, “喜”] → 分配注意力给两者&amp;#xa;生成“你”时：能看到全部 → 综合考虑所有上下文&amp;#xa;&amp;#xa;⚠️ 上三角（红色）= 未来信息，被完全屏蔽！" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#ffa000;fontColor=#333333;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="causal_container">
+          <mxGeometry x="340" y="360" width="270" height="142" as="geometry" />
+        </mxCell>
+
+        <!-- Legend for causal -->
+        <mxCell id="causal_legend" value="&lt;b&gt;图例&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#cccccc;fontColor=#333333;fontSize=10;" vertex="1" parent="causal_container">
+          <mxGeometry x="630" y="195" width="60" height="22" as="geometry" />
+        </mxCell>
+        <mxCell id="cl_green" value="可见（可关注）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=9;" vertex="1" parent="causal_container">
+          <mxGeometry x="700" y="192" width="115" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="cl_red" value="屏蔽（-∞ → 0）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=9;" vertex="1" parent="causal_container">
+          <mxGeometry x="700" y="222" width="120" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== PADDING MASK ==================== -->
+        <mxCell id="pad_container" value="&lt;b&gt;🔇 Padding Mask（填充掩码）&lt;/b&gt;" style="swimlane;startSize=32;fillColor=#e8f5e9;strokeColor=#4caf50;fontColor=#2e7d32;horizontal=1;container=1;collapsible=0;rounded=1;arcSize=6;fontSize=13;" vertex="1" parent="1">
+          <mxGeometry x="900" y="60" width="850" height="520" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pad_desc" value="&lt;b&gt;作用&lt;/b&gt;：屏蔽 &amp;lt;pad&amp;gt; token，防止模型关注无意义的填充位置&amp;#xa;&lt;b&gt;使用位置&lt;/b&gt;：Encoder Self-Attention + Decoder Cross-Attention（两处！）&amp;#xa;&lt;b&gt;原理&lt;/b&gt;：标记 pad 位置为 True，对应列/行填 -∞" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#4caf50;fontColor=#333333;fontSize=10;align=left;spacingLeft=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="20" y="45" width="420" height="72" as="geometry" />
+        </mxCell>
+
+        <!-- Padding example -->
+        <mxCell id="pad_example" value="&lt;b&gt;例句（补 pad 后）&lt;/b&gt;&amp;#xa;&quot;I love you &amp;lt;pad&amp;gt; &amp;lt;pad&amp;gt;&quot;&amp;#xa;seq_len = 5, 实际长度 = 3" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;" vertex="1" parent="pad_container">
+          <mxGeometry x="470" y="42" width="210" height="62" as="geometry" />
+        </mxCell>
+
+        <!-- Padding mask before attention -->
+        <mxCell id="pm_before_title" value="&lt;b&gt;Padding Mask 矩阵&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;True = 需要屏蔽的位置&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#333333;fontSize=11;" vertex="1" parent="pad_container">
+          <mxGeometry x="70" y="135" width="220" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Token IDs row -->
+        <mxCell id="pm_token_label" value="Token ID:" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="15" y="178" width="75" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="pm_t0" value="12 (&quot;I&quot;)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="95" y="178" width="68" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="pm_t1" value="25 (&quot;love&quot;)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="166" y="178" width="78" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="pm_t2" value="38 (&quot;you&quot;)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="247" y="178" width="73" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="pm_t3" value="0 (&amp;lt;pad&amp;gt;)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;dashed=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="323" y="178" width="76" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="pm_t4" value="0 (&amp;lt;pad&amp;gt;)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;dashed=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="402" y="178" width="76" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- Bool mask row -->
+        <mxCell id="pm_bool_label" value="Bool Mask:" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="15" y="213" width="75" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="pm_b0" value="False" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="95" y="213" width="68" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="pm_b1" value="False" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="166" y="213" width="78" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="pm_b2" value="False" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="247" y="213" width="73" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="pm_b3" value="&lt;b&gt;True&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="323" y="213" width="76" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="pm_b4" value="&lt;b&gt;True&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="402" y="213" width="76" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- Attention score with padding mask applied -->
+        <mxCell id="pm_attn_title" value="&lt;b&gt;应用 Mask 后的注意力分数（Q·Kᵀ/√d + mask）&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#333333;fontSize=11;" vertex="1" parent="pad_container">
+          <mxGeometry x="30" y="260" width="320" height="20" as="geometry" />
+        </mxCell>
+
+        <!-- Attention matrix with padding (5x5) -->
+        <!-- Column headers -->
+        <mxCell id="pac_0" value="I" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=9;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="15" y="286" width="44" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="pac_1" value="love" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=9;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="62" y="286" width="44" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="pac_2" value="you" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=9;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="109" y="286" width="44" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="pac_3" value="&lt;pad&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=9;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="156" y="286" width="50" height="24" as="geometry" />
+        </mxCell>
+        <mxCell id="pac_4" value="&lt;pad&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=9;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="209" y="286" width="50" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- Row I -->
+        <mxCell id="par_0" value="I" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=9;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="-18" y="313" width="30" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_00" value="0.5" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="15" y="313" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_01" value="0.3" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="62" y="313" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_02" value="0.2" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="109" y="313" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_03" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="156" y="313" width="50" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_04" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="209" y="313" width="50" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Row love -->
+        <mxCell id="par_1" value="love" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=9;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="-18" y="350" width="30" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_10" value="0.4" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="15" y="350" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_11" value="0.35" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="62" y="350" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_12" value="0.25" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="109" y="350" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_13" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="156" y="350" width="50" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_14" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="209" y="350" width="50" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Row you -->
+        <mxCell id="par_2" value="you" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#e8f0fe;strokeColor=#6c8ebf;fontColor=#333333;fontSize=9;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="-18" y="387" width="30" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_20" value="0.1" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="15" y="387" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_21" value="0.15" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="62" y="387" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_22" value="0.75" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="109" y="387" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_23" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="156" y="387" width="50" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_24" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="209" y="387" width="50" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Pad rows (all -inf) -->
+        <mxCell id="par_3" value="&lt;pad&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=9;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="-18" y="424" width="30" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_30" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="15" y="424" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_31" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="62" y="424" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_32" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="109" y="424" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_33" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="156" y="424" width="50" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_34" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="209" y="424" width="50" height="34" as="geometry" />
+        </mxCell>
+
+        <mxCell id="par_4" value="&lt;pad&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=9;fontStyle=1;" vertex="1" parent="pad_container">
+          <mxGeometry x="-18" y="461" width="30" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_40" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="15" y="461" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_41" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="62" y="461" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_42" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="109" y="461" width="44" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_43" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="156" y="461" width="50" height="34" as="geometry" />
+        </mxCell>
+        <mxCell id="pa_44" value="-∞" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#b85450;fontSize=10;" vertex="1" parent="pad_container">
+          <mxGeometry x="209" y="461" width="50" height="34" as="geometry" />
+        </mxCell>
+
+        <!-- Padding mask code and notes -->
+        <mxCell id="pad_code" value="&lt;b&gt;代码实现&lt;/b&gt;&amp;#xa;&amp;#xa;def make_padding_mask(seq, pad_idx):&amp;#xa;    # seq != pad_idx 的位置为 False（保留）&amp;#xa;    # seq == pad_idx 的位置为 True（屏蔽）&amp;#xa;    return (seq != pad_idx).bool().unsqueeze(1)&amp;#xa;&amp;#xa;# 输出 shape: [batch, 1, 1, seq_len]&amp;#xa;# 用 &amp; 运算与 causal_mask 合并" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#cccccc;fontColor=#333333;fontSize=9;align=left;spacingLeft=8;fontFamily=Courier New;" vertex="1" parent="pad_container">
+          <mxGeometry x="280" y="275" width="280" height="150" as="geometry" />
+        </mxCell>
+
+        <mxCell id="pad_note" value="&lt;b&gt;💡 关键点&lt;/b&gt;&amp;#xa;&amp;#xa;• Padding Mask 同时用在两个地方：&amp;#xa;  1️⃣ Encoder 内部的 Self-Attention&amp;#xa;  2️⃣ Decoder Cross-Attention（K/V 来自 Encoder）&amp;#xa;&amp;#xa;• Causal Mask 只用在一个地方：&amp;#xa;  Decoder 的 Masked Self-Attention&amp;#xa;&amp;#xa;• 两种 Mask 可以用 &amp; 合并（PyTorch 要求统一 bool 类型）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e8f5e9;strokeColor=#4caf50;fontColor=#333333;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="pad_container">
+          <mxGeometry x="580" y="275" width="250" height="190" as="geometry" />
+        </mxCell>
+
+        <!-- Two masks combined visualization -->
+        <mxCell id="combined_box" value="&lt;b&gt;🔄 两种 Mask 的组合使用&lt;/b&gt;" style="swimlane;startSize=26;fillColor=#fafafa;strokeColor=#999999;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;fontSize=11;" vertex="1" parent="pad_container">
+          <mxGeometry x="280" y="450" width="550" height="58" as="geometry" />
+        </mxCell>
+        <mxCell id="comb_enc" value="Encoder Self-Attn:&amp;#xa;只用 Padding Mask" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#333333;fontSize=10;" vertex="1" parent="combined_box">
+          <mxGeometry x="15" y="32" width="165" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="comb_dec_self" value="Decoder MaskedSelf-Attn:&amp;#xa;Causal Mask + Padding Mask" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333333;fontSize=10;" vertex="1" parent="combined_box">
+          <mxGeometry x="192" y="32" width="185" height="20" as="geometry" />
+        </mxCell>
+        <mxCell id="comb_dec_cross" value="Decoder Cross-Attn:&amp;#xa;只用 Padding Mask" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=10;" vertex="1" parent="combined_box">
+          <mxGeometry x="388" y="32" width="152" height="20" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+

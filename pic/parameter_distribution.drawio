@@ -1,0 +1,252 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="draw.io" version="29.6.6">
+  <diagram name="Parameter Distribution" id="param-dist">
+    <mxGraphModel dx="1400" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="&lt;b&gt;&lt;font style=&quot;font-size: 22px;&quot;&gt;Transformer 参数量分布详解&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="480" y="10" width="400" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Subtitle / scenario -->
+        <mxCell id="subtitle" value="&lt;font color=&quot;#666666&quot;&gt;以 d_model=512, d_ff=2048, num_heads=8, vocab_size=30000, N=6 层为例&lt;/font&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="420" y="45" width="520" height="24" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== PIE CHART (visual representation) ==================== -->
+        <mxCell id="pie_container" value="&lt;b&gt;单层 Encoder 参数量占比（饼图示意）&lt;/b&gt;" style="swimlane;startSize=28;fillColor=#fafafa;strokeColor=#999999;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="30" y="85" width="500" height="440" as="geometry" />
+        </mxCell>
+
+        <!-- Pie-like visual: stacked bars representing proportions -->
+        <mxCell id="pie_ffn" value="" style="shape=mxgraph.basic.pie;startAngle=0.3;endAngle=285;fillColor=#ffe6cc;strokeColor=#d79b00;strokeWidth=2;" vertex="1" parent="pie_container">
+          <mxGeometry x="120" y="50" width="220" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="pie_attn" value="" style="shape=mxgraph.basic.pie;startAngle=285;endAngle=357;fillColor=#e1d5e7;strokeColor=#9673a6;strokeWidth=2;" vertex="1" parent="pie_container">
+          <mxGeometry x="120" y="50" width="220" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="pie_norm" value="" style="shape=mxgraph.basic.pie;startAngle=357;endAngle=360;fillColor=#f8cecc;strokeColor=#b85450;strokeWidth=2;" vertex="1" parent="pie_container">
+          <mxGeometry x="120" y="50" width="220" height="220" as="geometry" />
+        </mxCell>
+
+        <!-- Pie center label -->
+        <mxCell id="pie_center" value="&lt;b&gt;~3.9M&lt;/b&gt;&lt;br&gt;参数/层" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=14;" vertex="1" parent="pie_container">
+          <mxGeometry x="195" y="138" width="70" height="40" as="geometry" />
+        </mxCell>
+
+        <!-- Legend for pie -->
+        <mxCell id="leg_ffn_pie" value="&lt;b&gt;FFN (~67%)&lt;/b&gt;&lt;br&gt;W₁, b₁, W₂, b₂" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#333333;fontSize=11;" vertex="1" parent="pie_container">
+          <mxGeometry x="365" y="55" width="120" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_attn_pie" value="&lt;b&gt;Attention (~32%)&lt;/b&gt;&lt;br&gt;W_Q, W_K, W_V, W_O" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=11;" vertex="1" parent="pie_container">
+          <mxGeometry x="365" y="115" width="125" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_norm_pie" value="&lt;b&gt;LayerNorm (&lt;1%)&lt;/b&gt;&lt;br&gt;γ, β per layer" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=11;" vertex="1" parent="pie_container">
+          <mxGeometry x="365" y="175" width="130" height="46" as="geometry" />
+        </mxCell>
+
+        <!-- Detailed breakdown table inside pie container -->
+        <mxCell id="detail_title" value="&lt;b&gt;📊 单层参数量详细计算&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontSize=12;" vertex="1" parent="pie_container">
+          <mxGeometry x="15" y="290" width="200" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- Table rows -->
+        <mxCell id="row1_h" value="&lt;b&gt;组件&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#cccccc;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="pie_container">
+          <mxGeometry x="15" y="320" width="150" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="row1_v" value="&lt;b&gt;参数形状&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#cccccc;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="pie_container">
+          <mxGeometry x="170" y="320" width="145" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="row1_n" value="&lt;b&gt;参数量&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#eeeeee;strokeColor=#cccccc;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="pie_container">
+          <mxGeometry x="320" y="320" width="80" height="28" as="geometry" />
+        </mxCell>
+
+        <!-- MHA rows -->
+        <mxCell id="r_wq" value="W_Q (Q 投影)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="15" y="352" width="150" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_wq_v" value="[512, 512]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#666666;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="170" y="352" width="145" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_wq_n" value="262,144" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="320" y="352" width="80" height="26" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r_wk" value="W_K (K 投影)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f9f9;strokeColor=#cccccc;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="15" y="382" width="150" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_wk_v" value="[512, 512]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f9f9;strokeColor=#cccccc;fontColor=#666666;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="170" y="382" width="145" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_wk_n" value="262,144" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f9f9;strokeColor=#cccccc;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="320" y="382" width="80" height="26" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r_wv" value="W_V (V 投影)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="15" y="412" width="150" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_wv_v" value="[512, 512]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#666666;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="170" y="412" width="145" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_wv_n" value="262,144" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#cccccc;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="320" y="412" width="80" height="26" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r_wo" value="W_O (输出投影)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f9f9;strokeColor=#cccccc;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="15" y="442" width="150" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_wo_v" value="[512, 512]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f9f9;strokeColor=#cccccc;fontColor=#666666;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="170" y="442" width="145" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_wo_n" value="262,144" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#f9f9f9;strokeColor=#cccccc;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="320" y="442" width="80" height="26" as="geometry" />
+        </mxCell>
+
+        <!-- FFN rows -->
+        <mxCell id="r_w1" value="W₁ (升维)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#d79b00;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="15" y="480" width="150" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_w1_v" value="[2048, 512]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#d79b00;fontColor=#666666;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="170" y="480" width="145" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_w1_n" value="1,048,576" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#d79b00;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="320" y="480" width="80" height="26" as="geometry" />
+        </mxCell>
+
+        <mxCell id="r_w2" value="W₂ (降维)" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#d79b00;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="15" y="510" width="150" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_w2_v" value="[512, 2048]" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#d79b00;fontColor=#666666;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="170" y="510" width="145" height="26" as="geometry" />
+        </mxCell>
+        <mxCell id="r_w2_n" value="1,048,576" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#fff8e1;strokeColor=#d79b00;fontColor=#333333;fontSize=9;" vertex="1" parent="pie_container">
+          <mxGeometry x="320" y="510" width="80" height="26" as="geometry" />
+        </mxCell>
+
+        <!-- Total row -->
+        <mxCell id="r_total_l" value="&lt;b&gt;单层总计&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="pie_container">
+          <mxGeometry x="15" y="350" width="150" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="r_total_v" value="--" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="pie_container">
+          <mxGeometry x="170" y="350" width="145" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="r_total_n" value="&lt;b&gt;~3,942K&lt;/b&gt;" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;fontStyle=1;" vertex="1" parent="pie_container">
+          <mxGeometry x="320" y="350" width="80" height="30" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== FULL MODEL PARAMETER BREAKDOWN ==================== -->
+        <mxCell id="full_container" value="&lt;b&gt;完整模型参数量构成（6 层 Encoder + 6 层 Decoder）&lt;/b&gt;" style="swimlane;startSize=28;fillColor=#fafafa;strokeColor=#999999;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;fontSize=12;" vertex="1" parent="1">
+          <mxGeometry x="560" y="85" width="1000" height="500" as="geometry" />
+        </mxCell>
+
+        <!-- Stacked bar chart representation -->
+        <!-- Embedding section -->
+        <mxCell id="emb_block" value="&lt;b&gt;Embedding 层&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#333333;fontSize=11;" vertex="1" parent="full_container">
+          <mxGeometry x="20" y="45" width="110" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="emb_bar_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;" vertex="1" parent="full_container">
+          <mxGeometry x="145" y="45" width="800" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="emb_bar" value="TokenEmb: 15.36M&amp;#xa;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;(30000 × 512)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#333333;fontSize=9;" vertex="1" parent="full_container">
+          <mxGeometry x="147" y="47" width="180" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="emb_bar2" value="PosEnc: ~0 (sin/cos)" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#666666;fontSize=9;dashed=1;" vertex="1" parent="full_container">
+          <mxGeometry x="332" y="47" width="105" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="emb_pct" value="&lt;b&gt;~33%&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#6c8ebf;fontSize=11;" vertex="1" parent="full_container">
+          <mxGeometry x="960" y="52" width="34" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- Encoder section -->
+        <mxCell id="enc_block" value="&lt;b&gt;Encoder ×6层&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=11;" vertex="1" parent="full_container">
+          <mxGeometry x="20" y="95" width="110" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="enc_bar_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;" vertex="1" parent="full_container">
+          <mxGeometry x="145" y="95" width="800" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="enc_attn_bar" value="Attn: 3.16M × 6 = 18.95M" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=9;" vertex="1" parent="full_container">
+          <mxGeometry x="147" y="97" width="210" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="enc_ffn_bar" value="FFN: 6.31M × 6 = 37.87M" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#333333;fontSize=9;" vertex="1" parent="full_container">
+          <mxGeometry x="362" y="97" width="210" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="enc_norm_bar" value="Norm: ~12K × 12 = 0.14M" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#666666;fontSize=9;" vertex="1" parent="full_container">
+          <mxGeometry x="577" y="97" width="170" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="enc_pct" value="&lt;b&gt;~41%&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#9673a6;fontSize=11;" vertex="1" parent="full_container">
+          <mxGeometry x="960" y="102" width="34" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- Decoder section -->
+        <mxCell id="dec_block" value="&lt;b&gt;Decoder ×6层&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=11;" vertex="1" parent="full_container">
+          <mxGeometry x="20" y="145" width="110" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="dec_bar_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;" vertex="1" parent="full_container">
+          <mxGeometry x="145" y="145" width="800" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="dec_self_bar" value="Self-Attn: 3.16M×6 = 18.95M" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=9;" vertex="1" parent="full_container">
+          <mxGeometry x="147" y="147" width="215" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="dec_cross_bar" value="Cross-Attn: 3.16M×6 = 18.95M" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8e4;strokeColor=#82b366;fontColor=#333333;fontSize=9;" vertex="1" parent="full_container">
+          <mxGeometry x="367" y="147" width="225" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="dec_ffn_bar" value="FFN: 6.31M×6 = 37.87M" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#333333;fontSize=9;" vertex="1" parent="full_container">
+          <mxGeometry x="597" y="147" width="195" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="dec_norm_bar" value="Norm: ~18K × 18 = 0.33M" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#666666;fontSize=9;" vertex="1" parent="full_container">
+          <mxGeometry x="797" y="147" width="142" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="dec_pct" value="&lt;b&gt;~56%&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#9673a6;fontSize=11;" vertex="1" parent="full_container">
+          <mxGeometry x="960" y="152" width="34" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- Output layer -->
+        <mxCell id="out_block" value="&lt;b&gt;输出层&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#333333;fontSize=11;" vertex="1" parent="full_container">
+          <mxGeometry x="20" y="195" width="110" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="out_bar_bg" value="" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;" vertex="1" parent="full_container">
+          <mxGeometry x="145" y="195" width="800" height="36" as="geometry" />
+        </mxCell>
+        <mxCell id="out_linear_bar" value="Linear(512 → 30000): &lt;b&gt;15.36M&lt;/b&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#333333;fontSize=9;" vertex="1" parent="full_container">
+          <mxGeometry x="147" y="197" width="230" height="32" as="geometry" />
+        </mxCell>
+        <mxCell id="out_pct" value="&lt;b&gt;~33%&lt;/b&gt;" style="text;html=1;align=left;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;fontColor=#d79b00;fontSize=11;" vertex="1" parent="full_container">
+          <mxGeometry x="960" y="202" width="34" height="22" as="geometry" />
+        </mxCell>
+
+        <!-- Grand total -->
+        <mxCell id="total_box" value="&lt;b&gt;模型总参数量 ≈ 117M (1.17亿)&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;10&quot;&gt;其中 Embedding + Output 占 ~66%，Encoder+Decoder 内部占 ~34%&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=13;arcSize=12;" vertex="1" parent="full_container">
+          <mxGeometry x="250" y="255" width="450" height="54" as="geometry" />
+        </mxCell>
+
+        <!-- Key insights -->
+        <mxCell id="insights_box" value="&lt;b&gt;💡 关键洞察&lt;/b&gt;" style="swimlane;startSize=26;fillColor=#fff8e1;strokeColor=#ffa000;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;fontSize=11;" vertex="1" parent="full_container">
+          <mxGeometry x="20" y="330" width="950" height="155" as="geometry" />
+        </mxCell>
+
+        <mxCell id="insight1" value="&lt;b&gt;1. 参数量 ∝ d_model²&lt;/b&gt;&lt;br&gt;每个线性层的参数都是 d_in × d_out，所以 d_model 翻倍 → 参数翻 4 倍！&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;这就是为什么 GPT-3 (d=12288) 有 1750 亿参数&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ffa000;fontColor=#333333;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="insights_box">
+          <mxGeometry x="15" y="36" width="450" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="insight2" value="&lt;b&gt;2. FFN 是参数大头（~67%/层）&lt;/b&gt;&lt;br&gt;因为 d_ff = 4 × d_model，两个大矩阵 W₁(4d²) + W₂(4d²) = 8d²&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;而 Attention 只有 4 个 d² 矩阵 (W_Q,W_K,W_V,W_O)&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ffa000;fontColor=#333333;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="insights_box">
+          <mxGeometry x="480" y="36" width="450" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="insight3" value="&lt;b&gt;3. Decoder 比 Encoder 参数更多&lt;/b&gt;&lt;br&gt;Decoder 多了一整套 Cross-Attention 参数（额外的 W_Q,W_K,W_V,W_O）&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;每层多 ~d_model² × 4 个参数&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ffa000;fontColor=#333333;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="insights_box">
+          <mxGeometry x="15" y="100" width="450" height="48" as="geometry" />
+        </mxCell>
+        <mxCell id="insight4" value="&lt;b&gt;4. Embedding 和 Output Layer 也很大&lt;/b&gt;&lt;br&gt;vocab_size × d_model = 30000 × 512 = 15.36M（出现两次！）&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;词表越大，Embedding 越吃参数。LLaMA 用 BPE 压缩词表来减少这部分&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffffff;strokeColor=#ffa000;fontColor=#333333;fontSize=10;align=left;spacingLeft=8;" vertex="1" parent="insights_box">
+          <mxGeometry x="480" y="100" width="450" height="48" as="geometry" />
+        </mxCell>
+
+        <!-- Scaling law note -->
+        <mxCell id="scaling_note" value="&lt;b&gt;📈 模型缩放规律&lt;/b&gt;&amp;#xa;&amp;#xa;d_model | 单层参数 | 6L Enc+6L Dec | 总计(含Emb)&amp;#xa;─────────────────────────────────────&amp;#xa;   128   |    ~66K   |     ~0.8M     |   ~2.0M&amp;#xa;   512   |   ~3.9M   |    ~56.8M     |  ~117M&amp;#xa;  1024   |   ~15.6M   |   ~226M       |  ~286M&amp;#xa;  4096   |  ~249M    |   ~3.6B       |  ~3.8B&amp;#xa; 12288   |  ~2.27B   |   ~32.7B      |  ~33B" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#fafafa;strokeColor=#cccccc;fontColor=#333333;fontSize=10;align=left;spacingLeft=10;fontFamily=Courier New;" vertex="1" parent="full_container">
+          <mxGeometry x="250" y="495" width="430" height="145" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+

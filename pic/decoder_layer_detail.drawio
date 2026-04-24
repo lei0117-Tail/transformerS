@@ -1,0 +1,216 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<mxfile host="draw.io" version="29.6.6">
+  <diagram name="Decoder Layer Detail" id="decoder-detail">
+    <mxGraphModel dx="1400" dy="1000" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="1600" pageHeight="1200" math="0" shadow="0">
+      <root>
+        <mxCell id="0" />
+        <mxCell id="1" parent="0" />
+
+        <!-- Title -->
+        <mxCell id="title" value="&lt;b&gt;&lt;font style=&quot;font-size: 20px;&quot;&gt;Decoder Layer 内部数据流（Pre-LN 模式）&lt;/font&gt;&lt;/b&gt;" style="text;html=1;align=center;verticalAlign=middle;resizable=0;points=[];autosize=1;strokeColor=none;fillColor=none;" vertex="1" parent="1">
+          <mxGeometry x="420" y="10" width="460" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- Input labels -->
+        <mxCell id="input_label" value="&lt;b&gt;输入 x&lt;/b&gt; (Decoder 嵌入)&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;[&amp;lt;start&amp;gt;, 我, 喜欢]&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;shape: [batch=1, seq_len=3, d_model=512]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="40" y="60" width="200" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="enc_out_label" value="&lt;b&gt;encoder_output&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot;&gt;(来自 Encoder)&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;[I, love, you]&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;shape: [1, 3, 512]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=11;dashed=1;" vertex="1" parent="1">
+          <mxGeometry x="1100" y="60" width="180" height="80" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== SUB-LAYER 1: Masked Self-Attention ==================== -->
+        <mxCell id="sl1_container" value="&lt;b&gt;子层一：Masked Self-Attention&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;防止偷看未来（Causal Mask）&lt;/font&gt;" style="swimlane;startSize=34;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="30" y="160" width="580" height="240" as="geometry" />
+        </mxCell>
+
+        <!-- Sublayer 1 internal flow -->
+        <mxCell id="s1_residual" value="residual = x&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;保存原始向量&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#333333;fontSize=10;" vertex="1" parent="sl1_container">
+          <mxGeometry x="20" y="50" width="130" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s1_norm" value="&lt;b&gt;LayerNorm&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;归一化&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="sl1_container">
+          <mxGeometry x="180" y="50" width="100" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s1_mha" value="&lt;b&gt;MHA&lt;/b&gt;&lt;br&gt;Q·Kᵀ/√d · V&amp;#xa;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;+ Causal Mask&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=10;arcSize=12;" vertex="1" parent="sl1_container">
+          <mxGeometry x="310" y="45" width="120" height="56" as="geometry" />
+        </mxCell>
+        <mxCell id="s1_dropout" value="Dropout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontColor=#666666;fontSize=9;" vertex="1" parent="sl1_container">
+          <mxGeometry x="460" y="50" width="80" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s1_add" value="&lt;b&gt;Add&lt;/b&gt;&lt;br&gt;x + output&amp;#xa;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;残差连接①&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="sl1_container">
+          <mxGeometry x="360" y="125" width="110" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="s1_result" value="&lt;b&gt;中间输出 x₁&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;融合了自身上下文&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;[1, 3, 512]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="sl1_container">
+          <mxGeometry x="210" y="195" width="170" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- Sublayer 1 arrows -->
+        <mxCell id="sa1_1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1.2;" edge="1" parent="sl1_container" source="s1_norm" target="s1_mha">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa1_2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9673a6;strokeWidth=1.2;" edge="1" parent="sl1_container" source="s1_mha" target="s1_dropout">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa1_3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="sl1_container" source="s1_dropout" target="s1_add">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa1_4" value="residual" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#999999;strokeWidth=1;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="sl1_container" source="s1_residual" target="s1_add">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa1_5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="sl1_container" source="s1_add" target="s1_result">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow from input to sublayer 1 -->
+        <mxCell id="in_s1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="input_label" target="sl1_container">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== SUB-LAYER 2: Cross-Attention ==================== -->
+        <mxCell id="sl2_container" value="&lt;b&gt;子层二：Cross-Attention&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;Q 来自 Decoder，K/V 来自 Encoder 👈 关键！&lt;/font&gt;" style="swimlane;startSize=34;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="30" y="430" width="700" height="250" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s2_residual" value="residual = x₁&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;保存中间结果&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#333333;fontSize=10;" vertex="1" parent="sl2_container">
+          <mxGeometry x="15" y="50" width="120" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s2_norm" value="&lt;b&gt;LayerNorm&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;归一化&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="sl2_container">
+          <mxGeometry x="165" y="50" width="100" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s2_cross" value="&lt;b&gt;Cross-Attn&lt;/b&gt;&lt;br&gt;Q = Decoder(x)&amp;#xa;K,V = EncOut&amp;#xa;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;attn: [1, 8, 3, 3]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=10;arcSize=12;strokeWidth=2;" vertex="1" parent="sl2_container">
+          <mxGeometry x="300" y="42" width="135" height="62" as="geometry" />
+        </mxCell>
+        <mxCell id="s2_dropout" value="Dropout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontColor=#666666;fontSize=9;" vertex="1" parent="sl2_container">
+          <mxGeometry x="465" y="50" width="80" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s2_add" value="&lt;b&gt;Add&lt;/b&gt;&lt;br&gt;x + output&amp;#xa;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;残差连接②&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="sl2_container">
+          <mxGeometry x="355" y="130" width="110" height="75" as="geometry" />
+        </mxCell>
+        <mxCell id="s2_result" value="&lt;b&gt;中间输出 x₂&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;融合了 Encoder 信息&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;[1, 3, 512]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="sl2_container">
+          <mxGeometry x="205" y="200" width="175" height="38" as="geometry" />
+        </mxCell>
+
+        <!-- Cross-attention K/V input box inside sublayer 2 -->
+        <mxCell id="s2_kv_input" value="&lt;b&gt;K, V 来源&lt;/b&gt;&lt;br&gt;encoder_output&amp;#xa;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;[1, src_len=3, 512]&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#dae8fc;strokeColor=#6c8ebf;fontColor=#333333;fontSize=9;dashed=1;" vertex="1" parent="sl2_container">
+          <mxGeometry x="555" y="48" width="130" height="52" as="geometry" />
+        </mxCell>
+
+        <!-- Sublayer 2 arrows -->
+        <mxCell id="sa2_1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1.2;" edge="1" parent="sl2_container" source="s2_norm" target="s2_cross">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa2_kv" value="K,V" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;strokeWidth=2;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="sl2_container" source="s2_kv_input" target="s2_cross">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa2_2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#9673a6;strokeWidth=1.2;" edge="1" parent="sl2_container" source="s2_cross" target="s2_dropout">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa2_3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="sl2_container" source="s2_dropout" target="s2_add">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa2_4" value="residual" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#999999;strokeWidth=1;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.5;entryDx=0;entryDy=0;" edge="1" parent="sl2_container" source="s2_residual" target="s2_add">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa2_5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="sl2_container" source="s2_add" target="s2_result">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow from enc_out to cross attention K/V -->
+        <mxCell id="enc_to_cross" value="K, V" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#6c8ebf;strokeWidth=3;flowAnimation=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=1;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="1" source="enc_out_label" target="sl2_container">
+          <mxGeometry relative="1" as="geometry">
+            <Array as="points">
+              <mxPoint x="1190" y="350" />
+              <mxPoint x="800" y="350" />
+              <mxPoint x="800" y="480" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+
+        <!-- Arrow: s1 result to s2 container -->
+        <mxCell id="s1_to_s2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sl1_container" target="sl2_container">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== SUB-LAYER 3: FFN ==================== -->
+        <mxCell id="sl3_container" value="&lt;b&gt;子层三：Feed Forward Network (FFN)&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;升维 → 非线性激活 → 降维&lt;/font&gt;" style="swimlane;startSize=34;fillColor=#fff2cc;strokeColor=#d6b656;fontColor=#333333;horizontal=1;container=1;collapsible=0;rounded=1;arcSize=8;" vertex="1" parent="1">
+          <mxGeometry x="30" y="710" width="600" height="260" as="geometry" />
+        </mxCell>
+
+        <mxCell id="s3_residual" value="residual = x₂&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;9&quot;&gt;保存中间结果&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#999999;fontColor=#333333;fontSize=10;" vertex="1" parent="sl3_container">
+          <mxGeometry x="15" y="50" width="120" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s3_norm" value="&lt;b&gt;LayerNorm&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;归一化&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="sl3_container">
+          <mxGeometry x="165" y="50" width="100" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s3_linear1" value="&lt;b&gt;Linear₁&lt;/b&gt;&lt;br&gt;512 → 2048&amp;#xa;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;升维 4×&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#333333;fontSize=10;" vertex="1" parent="sl3_container">
+          <mxGeometry x="300" y="44" width="105" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="s3_relu" value="&lt;b&gt;ReLU / GELU&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;非线性激活&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="sl3_container">
+          <mxGeometry x="435" y="44" width="115" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="s3_linear2" value="&lt;b&gt;Linear₂&lt;/b&gt;&lt;br&gt;2048 → 512&amp;#xa;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;降回原维度&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#333333;fontSize=10;" vertex="1" parent="sl3_container">
+          <mxGeometry x="370" y="116" width="105" height="54" as="geometry" />
+        </mxCell>
+        <mxCell id="s3_dropout" value="Dropout" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f5f5f5;strokeColor=#cccccc;fontColor=#666666;fontSize=9;" vertex="1" parent="sl3_container">
+          <mxGeometry x="500" y="116" width="80" height="46" as="geometry" />
+        </mxCell>
+        <mxCell id="s3_add" value="&lt;b&gt;Add&lt;/b&gt;&lt;br&gt;x + output&amp;#xa;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;残差连接③&lt;/font&gt;" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="sl3_container">
+          <mxGeometry x="340" y="190" width="110" height="55" as="geometry" />
+        </mxCell>
+        <mxCell id="s3_final" value="&lt;b&gt;最终输出 x₃&lt;/b&gt;&lt;br&gt;&lt;font color=&quot;#666666&quot; font-size=&quot;9&quot;&gt;自身上下文 + Encoder信息 + FFN加工&lt;/font&gt;&lt;br&gt;&lt;font color=&quot;#888888&quot; font-size=&quot;8&quot;&gt;[1, 3, 512] → 送入下一层&lt;/font&gt;" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="sl3_container">
+          <mxGeometry x="185" y="215" width="310" height="36" as="geometry" />
+        </mxCell>
+
+        <!-- Sublayer 3 arrows -->
+        <mxCell id="sa3_1" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#666666;strokeWidth=1.2;" edge="1" parent="sl3_container" source="s3_norm" target="s3_linear1">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa3_2" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;strokeWidth=1.2;" edge="1" parent="sl3_container" source="s3_linear1" target="s3_relu">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa3_3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#d79b00;strokeWidth=1.2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="sl3_container" source="s3_relu" target="s3_linear2">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa3_4" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#999999;strokeWidth=1.2;" edge="1" parent="sl3_container" source="s3_linear2" target="s3_dropout">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa3_5" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#b85450;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="sl3_container" source="s3_dropout" target="s3_add">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa3_6" value="residual" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#999999;strokeWidth=1;dashed=1;exitX=1;exitY=0.5;exitDx=0;exitDy=0;entryX=0;entryY=0.25;entryDx=0;entryDy=0;" edge="1" parent="sl3_container" source="s3_residual" target="s3_add">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+        <mxCell id="sa3_7" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=1.5;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.5;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="sl3_container" source="s3_add" target="s3_final">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- Arrow: s2 to s3 -->
+        <mxCell id="s2_to_s3" value="" style="edgeStyle=orthogonalEdgeStyle;rounded=1;orthogonalLoop=1;jettySize=auto;html=1;strokeColor=#82b366;strokeWidth=2;exitX=0.5;exitY=1;exitDx=0;exitDy=0;entryX=0.25;entryY=0;entryDx=0;entryDy=0;" edge="1" parent="1" source="sl2_container" target="sl3_container">
+          <mxGeometry relative="1" as="geometry" />
+        </mxCell>
+
+        <!-- ==================== LEGEND ==================== -->
+        <mxCell id="legend" value="&lt;b&gt;图例&lt;/b&gt;" style="swimlane;startSize=26;fillColor=#fafafa;strokeColor=#cccccc;fontColor=#333333;horizontal=1;container=1;collapsible=0;fontSize=11;" vertex="1" parent="1">
+          <mxGeometry x="750" y="450" width="230" height="220" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_norm" value="LayerNorm（归一化）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="legend">
+          <mxGeometry x="15" y="38" width="155" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_attn" value="Attention（注意力）" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#e1d5e7;strokeColor=#9673a6;fontColor=#333333;fontSize=10;" vertex="1" parent="legend">
+          <mxGeometry x="15" y="76" width="155" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_ffn" value="FFN 线性变换" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#ffe6cc;strokeColor=#d79b00;fontColor=#333333;fontSize=10;" vertex="1" parent="legend">
+          <mxGeometry x="15" y="114" width="155" height="28" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_add" value="Add（残差连接）" style="rhombus;whiteSpace=wrap;html=1;fillColor=#f8cecc;strokeColor=#b85450;fontColor=#333333;fontSize=10;" vertex="1" parent="legend">
+          <mxGeometry x="30" y="152" width="110" height="40" as="geometry" />
+        </mxCell>
+        <mxCell id="leg_io" value="输入 / 输出" style="rounded=1;whiteSpace=wrap;html=1;fillColor=#d5e8d4;strokeColor=#82b366;fontColor=#333333;fontSize=10;" vertex="1" parent="legend">
+          <mxGeometry x="15" y="178" width="120" height="28" as="geometry" />
+        </mxCell>
+
+      </root>
+    </mxGraphModel>
+  </diagram>
+</mxfile>
+
